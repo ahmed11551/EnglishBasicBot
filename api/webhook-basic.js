@@ -396,9 +396,8 @@ export default async function handler(req, res) {
         '💡 Сначала попробуйте вспомнить сами, потом нажимайте вариант.';
       const keyboard = {
         inline_keyboard: [
-          buildLevelRow(userLevel),
           ...optionsWithData.map((o) => [{ text: o.text, callback_data: o.callbackData }]),
-          [{ text: '📂 Темы', callback_data: 'basic_topics_page_0' }, { text: '🏠 Меню', callback_data: 'basic_menu' }],
+          [{ text: '🏠 Меню', callback_data: 'basic_menu' }],
         ],
       };
       await sendMessage(token, chatId, msg, keyboard);
@@ -414,9 +413,8 @@ export default async function handler(req, res) {
         `\n\n📌 В подборке: <b>${poolCount}</b> слов\n\n` +
         '💡 Совет: повторите вслух и придумайте своё предложение.';
       const wButtons = [
-        buildLevelRow(userLevel),
-        [{ text: '🔄 Ещё 5 слов', callback_data: 'basic_words_more' }],
-        [{ text: '📂 Темы', callback_data: 'basic_topics_page_0' }, { text: '🏠 Меню', callback_data: 'basic_menu' }],
+        [{ text: '🔄 Ещё слова', callback_data: 'basic_words_more' }],
+        [{ text: '🏠 Меню', callback_data: 'basic_menu' }],
       ];
       await sendMessage(token, chatId, msg, { inline_keyboard: wButtons });
     } else if (text && !body?.callback_query) {
@@ -442,22 +440,7 @@ export default async function handler(req, res) {
           body: JSON.stringify({ callback_query_id: cb.id }),
         });
 
-      if (data === 'basic_level_A1' || data === 'basic_level_A2' || data === 'basic_level_B1') {
-        const nextLevel = data.replace('basic_level_', '');
-        await answerCb();
-        await setUserLevel(cbChatId, normalizeLevel(nextLevel));
-        // если текущей темы нет в новом уровне — сбрасываем на ALL
-        try {
-          const topics = getTopicsForLevel(nextLevel);
-          if (normalizeTopic(cbUserTopic) !== 'ALL' && !topics.includes(cbUserTopic)) {
-            cbUserTopic = 'ALL';
-            await setUserTopic(cbChatId, 'ALL');
-          }
-        } catch {
-          // ignore
-        }
-        await showMainMenu(cbChatId, false, nextLevel, cbUserTopic);
-      } else if (data === 'basic_menu') {
+      if (data === 'basic_menu') {
         await answerCb();
         await showMainMenu(cbChatId, false, cbUserLevel, cbUserTopic);
       } else if (data === 'basic_goal') {
@@ -482,28 +465,6 @@ export default async function handler(req, res) {
         if (Number.isFinite(n) && n > 0 && n <= 50) {
           await setDailyGoal(cbChatId, n);
         }
-        await showMainMenu(cbChatId, false, cbUserLevel, cbUserTopic);
-      } else if (data === 'basic_topics_noop') {
-        await answerCb();
-      } else if (data.startsWith('basic_topics_page_')) {
-        await answerCb();
-        const page = parseInt(data.slice('basic_topics_page_'.length), 10);
-        await sendMessage(
-          token,
-          cbChatId,
-          `📂 <b>Выберите тему</b>\n\n🎚️ Уровень: <b>${escapeHtml(levelLabel(cbUserLevel))}</b>\nТекущая тема: <b>${escapeHtml(
-            topicLabel(cbUserTopic),
-          )}</b>`,
-          buildTopicsKeyboard(cbUserLevel, cbUserTopic, Number.isFinite(page) ? page : 0),
-        );
-      } else if (data.startsWith('basic_topic_set_')) {
-        await answerCb();
-        const idxRaw = data.slice('basic_topic_set_'.length);
-        const idx = parseInt(idxRaw, 10);
-        const topics = getTopicsForLevel(cbUserLevel);
-        const nextTopic = idx === -1 ? 'ALL' : topics[idx] || 'ALL';
-        await setUserTopic(cbChatId, normalizeTopic(nextTopic));
-        cbUserTopic = normalizeTopic(nextTopic);
         await showMainMenu(cbChatId, false, cbUserLevel, cbUserTopic);
       } else if (data === 'basic_words_day') {
         const goal = await getDailyGoal(cbChatId);
