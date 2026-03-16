@@ -254,10 +254,7 @@ export default async function handler(req, res) {
     const isStart = text === '/start' || text === '/start start';
     const isHelp = /^\/help(@\w+)?$/i.test(text);
     const isWords = /^\/words(@\w+)?$/i.test(text) || /^(слова дня|новые слова|слова|ещё слова)$/i.test(text);
-    const isLearn = /^\/learn(@\w+)?$/i.test(text) || /^(учить|учиться|обучение|слово)$/i.test(text);
     const isQuiz = /^\/quiz(@\w+)?$/i.test(text) || /^(квиз|тест|проверка)$/i.test(text);
-    const isStats = /^\/stats(@\w+)?$/i.test(text) || /^(статистика|прогресс|stats)$/i.test(text);
-    const isResetStats = /^\/reset_stats(@\w+)?$/i.test(text) || /^\/resetstats(@\w+)?$/i.test(text);
     const isGoal = /^\/goal(@\w+)?/i.test(text) || /^(цель|цель дня)$/i.test(text);
     const isMenu = /^\/menu(@\w+)?$/i.test(text);
     const isSubscribe = /^\/subscribe(@\w+)?$/i.test(text);
@@ -283,11 +280,7 @@ export default async function handler(req, res) {
         `📂 <b>Тема</b>: ${escapeHtml(topicLabel(topic))}\n\n` +
         `📌 <b>В подборке</b>: ${poolCount} слов\n\n` +
         `🎯 <b>Цель дня</b>: ${dailySeen}/${goal}\n\n` +
-        (progress
-          ? `📈 <b>Прогресс</b>: выучено ${progress.seenCount} • квиз ${progress.quizCorrect}/${progress.quizTotal}\n\n`
-          : '') +
-        '📝 <b>Слова дня</b> — 5 слов на сегодня\n' +
-        '📖 <b>Учить</b> — одно слово → перевод → пример\n' +
+        '📝 <b>Слова дня</b> — 3, 5 или 10 слов на сегодня\n' +
         '🎯 <b>Квиз</b> — выберите правильный перевод\n\n' +
         '💡 Совет: проговорите слово вслух и придумайте своё предложение.';
 
@@ -298,9 +291,7 @@ export default async function handler(req, res) {
           buildLevelRow(current),
           [{ text: '📂 Темы', callback_data: 'basic_topics_page_0' }],
           [{ text: '📝 Слова дня', callback_data: 'basic_words_day' }],
-          [{ text: '📖 Учить слова', callback_data: 'basic_learn_next' }],
           [{ text: '🎯 Квиз', callback_data: 'basic_quiz_next' }],
-          [{ text: '📊 Статистика', callback_data: 'basic_stats' }],
           [{ text: '🎯 Цель дня', callback_data: 'basic_goal' }],
         ],
       };
@@ -332,70 +323,6 @@ export default async function handler(req, res) {
           ],
         },
       );
-    } else if (isStats) {
-      {
-        const [progress, seenIds, quizByLevel] = await Promise.all([
-          getUserQuizProgress(chatId),
-          getUserSeenIds(chatId),
-          getUserQuizProgressByLevel(chatId),
-        ]);
-        const seenBreakdown = computeSeenBreakdown(seenIds);
-        const selection = computeCurrentSelectionProgress(seenIds, userLevel, userTopic);
-        const poolCount = filterByTopic(filterByLevel(BASIC_WORDS, userLevel), userTopic).length;
-        const percent =
-          progress && progress.quizTotal > 0 ? Math.round((progress.quizCorrect / progress.quizTotal) * 100) : 0;
-        const percentA1 =
-          quizByLevel && quizByLevel.A1.total > 0 ? Math.round((quizByLevel.A1.correct / quizByLevel.A1.total) * 100) : 0;
-        const percentA2 =
-          quizByLevel && quizByLevel.A2.total > 0 ? Math.round((quizByLevel.A2.correct / quizByLevel.A2.total) * 100) : 0;
-        const percentB1 =
-          quizByLevel && quizByLevel.B1.total > 0 ? Math.round((quizByLevel.B1.correct / quizByLevel.B1.total) * 100) : 0;
-        const topTopicsText =
-          seenBreakdown.topTopics.length > 0
-            ? '\n' +
-              seenBreakdown.topTopics
-                .map(([m, c], idx) => `${idx + 1}. ${escapeHtml(m)} — <b>${c}</b>`)
-                .join('\n')
-            : '—';
-        const msg =
-          `📊 <b>Статистика</b>\n\n` +
-          `🎚️ Уровень: <b>${escapeHtml(levelLabel(userLevel))}</b>\n` +
-          `📂 Тема: <b>${escapeHtml(topicLabel(userTopic))}</b>\n` +
-          `📌 В подборке: <b>${poolCount}</b> слов\n\n` +
-          `📍 <b>Прогресс в текущей подборке</b>: <b>${selection.seenInPool}/${selection.total}</b> (${selection.percent}%)\n\n` +
-          `✅ Выучено (показали перевод): <b>${progress?.seenCount ?? 0}</b>\n` +
-          `🎯 Квиз: <b>${progress?.quizCorrect ?? 0}/${progress?.quizTotal ?? 0}</b> (${percent}%)\n\n` +
-          `📚 <b>Выучено по уровням</b>\n` +
-          `A1: <b>${seenBreakdown.byLevel.A1}</b> • A2: <b>${seenBreakdown.byLevel.A2}</b> • B1: <b>${seenBreakdown.byLevel.B1}</b>\n\n` +
-          `🎯 <b>Квиз по уровням</b>\n` +
-          `A1: <b>${quizByLevel?.A1.correct ?? 0}/${quizByLevel?.A1.total ?? 0}</b> (${percentA1}%)\n` +
-          `A2: <b>${quizByLevel?.A2.correct ?? 0}/${quizByLevel?.A2.total ?? 0}</b> (${percentA2}%)\n` +
-          `B1: <b>${quizByLevel?.B1.correct ?? 0}/${quizByLevel?.B1.total ?? 0}</b> (${percentB1}%)\n\n` +
-          `🏷️ <b>Топ тем (выучено)</b>\n${topTopicsText}\n\n` +
-          `💡 Совет: лучше 5–10 минут каждый день, чем редко и долго.`;
-        await sendMessage(token, chatId, msg, {
-          inline_keyboard: [
-            buildLevelRow(userLevel),
-            [
-              { text: '🧹 Сбросить статистику', callback_data: 'basic_stats_reset_confirm' },
-              { text: '🏠 Меню', callback_data: 'basic_menu' },
-            ],
-            [{ text: '📂 Темы', callback_data: 'basic_topics_page_0' }],
-          ],
-        });
-      }
-    } else if (isResetStats) {
-      await sendMessage(
-        token,
-        chatId,
-        '🧹 <b>Сбросить статистику?</b>\n\nЭто удалит:\n- выученные слова (по кнопке «Показать перевод»)\n- результаты квиза\n\nПродолжить?',
-        {
-          inline_keyboard: [
-            [{ text: 'Да, сбросить', callback_data: 'basic_stats_reset_do' }],
-            [{ text: 'Отмена', callback_data: 'basic_stats' }],
-          ],
-        },
-      );
     } else if (isSubscribe) {
       const ok = await addSubscriber(chatId);
       if (ok) {
@@ -418,21 +345,6 @@ export default async function handler(req, res) {
       } else {
         await sendMessage(token, chatId, 'Не удалось отписаться. Попробуйте позже.');
       }
-    } else if (isLearn) {
-      const pool = filterByTopic(filterByLevel(BASIC_WORDS, userLevel), userTopic);
-      const word = pool.length ? pool[Math.floor(Math.random() * pool.length)] : getRandomWordBasic();
-      const msg = `📖 🇬🇧 <b>Как переводится?</b>\n\n<code>${escapeHtml(word.term)}</code>`;
-      const keyboard = {
-        inline_keyboard: [
-          buildLevelRow(userLevel),
-          [
-            { text: 'Показать перевод', callback_data: `basic_learn_show_${word.id}` },
-            { text: 'Следующее →', callback_data: 'basic_learn_next' },
-          ],
-          [{ text: '📂 Темы', callback_data: 'basic_topics_page_0' }, { text: '🏠 Меню', callback_data: 'basic_menu' }],
-        ],
-      };
-      await sendMessage(token, chatId, msg, keyboard);
     } else if (isQuiz) {
       // вопрос только из выбранного уровня
       const pool = filterByTopic(filterByLevel(BASIC_WORDS, userLevel), userTopic);
@@ -473,7 +385,8 @@ export default async function handler(req, res) {
       };
       await sendMessage(token, chatId, msg, keyboard);
     } else if (isWords) {
-      const words = filterByTopic(filterByLevel(getWordsOfDayBasic(5, null), userLevel), userTopic);
+      const goal = await getDailyGoal(chatId); // 3,5,10
+      const words = filterByTopic(filterByLevel(getWordsOfDayBasic(goal, null), userLevel), userTopic);
       const poolCount = filterByTopic(filterByLevel(BASIC_WORDS, userLevel), userTopic).length;
       const msg =
         formatWordsMessage(
