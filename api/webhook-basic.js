@@ -12,23 +12,25 @@ import {
   getQuizQuestionBasic,
   BASIC_WORDS,
 } from './basicWordsData.js';
-import { KV_KEYS } from './kvSchema-basic.js';
+import {
+  addSubscriber,
+  addUserToAllUsers,
+  getDailyGoal,
+  getDailySeenCount,
+  getUserProfile,
+  getUserQuizProgress,
+  getUserQuizProgressByLevel,
+  getUserSeenIds,
+  incrementQuizStats,
+  markWordSeen,
+  resetUserStats,
+  setDailyGoal,
+  setUserLevel,
+  setUserTopic,
+} from './storage-basic.js';
 
 const LEVELS = ['A1', 'A2', 'B1'];
 const TOPICS_PAGE_SIZE = 8;
-
-async function getKV() {
-  if (!process.env.KV_REST_API_URL || !process.env.KV_REST_API_TOKEN) {
-    return null;
-  }
-  try {
-    const kvModule = await import('@vercel/kv');
-    return kvModule.kv ?? null;
-  } catch (e) {
-    console.error('KV import error (basic):', e?.message || e);
-    return null;
-  }
-}
 
 function escapeHtml(text) {
   if (!text) return '';
@@ -141,85 +143,6 @@ function buildQuickNavKeyboard() {
   };
 }
 
-async function getUserProgress(kv, chatId) {
-  if (!kv || chatId == null) return null;
-  try {
-    const [seenCount, quizTotal, quizCorrect] = await Promise.all([
-      kv.scard(KV_KEYS.userSeen(chatId)),
-      kv.get(KV_KEYS.userQuizTotal(chatId)),
-      kv.get(KV_KEYS.userQuizCorrect(chatId)),
-    ]);
-    const total = Number.parseInt(String(quizTotal ?? '0'), 10) || 0;
-    const correct = Number.parseInt(String(quizCorrect ?? '0'), 10) || 0;
-    return {
-      seenCount: Number(seenCount) || 0,
-      quizTotal: total,
-      quizCorrect: correct,
-    };
-  } catch (e) {
-    return null;
-  }
-}
-
-async function getUserSeenIds(kv, chatId) {
-  if (!kv || chatId == null) return [];
-  try {
-    const ids = await kv.smembers(KV_KEYS.userSeen(chatId));
-    return Array.isArray(ids) ? ids.map(String) : [];
-  } catch (e) {
-    return [];
-  }
-}
-
-function todayKey() {
-  return new Date().toISOString().slice(0, 10);
-}
-
-async function getDailyGoal(kv, chatId) {
-  if (!kv || chatId == null) return 5;
-  try {
-    const v = await kv.get(KV_KEYS.userDailyGoal(chatId));
-    const n = Number.parseInt(String(v ?? '5'), 10);
-    return Number.isFinite(n) && n > 0 && n <= 50 ? n : 5;
-  } catch (e) {
-    return 5;
-  }
-}
-
-async function getDailySeenCount(kv, chatId, dateStr = null) {
-  if (!kv || chatId == null) return 0;
-  const d = dateStr || todayKey();
-  try {
-    const c = await kv.scard(KV_KEYS.userSeenDaily(chatId, d));
-    return Number(c) || 0;
-  } catch (e) {
-    return 0;
-  }
-}
-
-async function getQuizProgressByLevel(kv, chatId) {
-  if (!kv || chatId == null) return null;
-  try {
-    const keys = LEVELS.flatMap((l) => [
-      kv.get(KV_KEYS.userQuizTotalByLevel(chatId, l)),
-      kv.get(KV_KEYS.userQuizCorrectByLevel(chatId, l)),
-    ]);
-    const values = await Promise.all(keys);
-    const out = {};
-    for (let i = 0; i < LEVELS.length; i++) {
-      const l = LEVELS[i];
-      const totalRaw = values[i * 2];
-      const correctRaw = values[i * 2 + 1];
-      const total = Number.parseInt(String(totalRaw ?? '0'), 10) || 0;
-      const correct = Number.parseInt(String(correctRaw ?? '0'), 10) || 0;
-      out[l] = { total, correct };
-    }
-    return out;
-  } catch (e) {
-    return null;
-  }
-}
-
 function computeSeenBreakdown(seenIds) {
   const byLevel = { A1: 0, A2: 0, B1: 0 };
   const byTopic = new Map(); // moduleRu -> count
@@ -245,27 +168,6 @@ function computeCurrentSelectionProgress(seenIds, level, topic) {
   const total = pool.length;
   const percent = total > 0 ? Math.round((seenInPool / total) * 100) : 0;
   return { total, seenInPool, percent };
-}
-
-async function resetUserStats(kv, chatId) {
-  if (!kv || chatId == null) return false;
-  const cid = String(chatId);
-  try {
-    const keys = [
-      KV_KEYS.userSeen(cid),
-      // ежедневные ключи не трогаем (их может быть много), но сбрасываем текущий день
-      KV_KEYS.userSeenDaily(cid, todayKey()),
-      KV_KEYS.userDailyGoal(cid),
-      KV_KEYS.userQuizTotal(cid),
-      KV_KEYS.userQuizCorrect(cid),
-      ...LEVELS.map((l) => KV_KEYS.userQuizTotalByLevel(cid, l)),
-      ...LEVELS.map((l) => KV_KEYS.userQuizCorrectByLevel(cid, l)),
-    ];
-    await Promise.all(keys.map((k) => kv.del(k)));
-    return true;
-  } catch (e) {
-    return false;
-  }
 }
 
 function formatWordsMessage(words, title) {
@@ -336,13 +238,8 @@ export default async function handler(req, res) {
     const chatId = message?.chat?.id;
     const text = (message?.text || '').trim();
 
-    const kvForUser = await getKV();
-    if (chatId != null && kvForUser) {
-      try {
-        await kvForUser.sadd(KV_KEYS.allUsers, String(chatId));
-      } catch (e) {
-        console.error('KV sadd all_users error (basic):', e?.message || e);
-      }
+    if (chatId != null) {
+      await addUserToAllUsers(chatId);
     }
 
     if (chatId == null && !body?.callback_query) {
@@ -350,26 +247,9 @@ export default async function handler(req, res) {
       return;
     }
 
-    // выбранный уровень пользователя (KV) или дефолт A1
-    let userLevel = 'A1';
-    if (chatId != null && kvForUser) {
-      try {
-      const saved = await kvForUser.get(KV_KEYS.userLevel(chatId));
-        userLevel = normalizeLevel(saved);
-      } catch (e) {
-        userLevel = 'A1';
-      }
-    }
-    // выбранная тема пользователя (KV) или ALL
-    let userTopic = 'ALL';
-    if (chatId != null && kvForUser) {
-      try {
-      const savedTopic = await kvForUser.get(KV_KEYS.userTopic(chatId));
-        userTopic = normalizeTopic(savedTopic);
-      } catch (e) {
-        userTopic = 'ALL';
-      }
-    }
+    const profile = chatId != null ? await getUserProfile(chatId) : { level: 'A1', topic: 'ALL' };
+    let userLevel = normalizeLevel(profile.level);
+    let userTopic = normalizeTopic(profile.topic);
 
     const isStart = text === '/start' || text === '/start start';
     const isHelp = /^\/help(@\w+)?$/i.test(text);
@@ -388,9 +268,9 @@ export default async function handler(req, res) {
       const topic = normalizeTopic(currentTopic);
       const poolCount = filterByTopic(filterByLevel(BASIC_WORDS, current), topic).length;
       const [progress, goal, dailySeen] = await Promise.all([
-        getUserProgress(kvForUser, targetChatId),
-        getDailyGoal(kvForUser, targetChatId),
-        getDailySeenCount(kvForUser, targetChatId),
+        getUserQuizProgress(targetChatId),
+        getDailyGoal(targetChatId),
+        getDailySeenCount(targetChatId),
       ]);
       const intro = withIntro
         ? '👋 <b>Базовый английский</b>\n\n' +
@@ -402,7 +282,7 @@ export default async function handler(req, res) {
         `🎚️ <b>Уровень</b>: ${escapeHtml(levelLabel(current))}\n\n` +
         `📂 <b>Тема</b>: ${escapeHtml(topicLabel(topic))}\n\n` +
         `📌 <b>В подборке</b>: ${poolCount} слов\n\n` +
-        (kvForUser ? `🎯 <b>Цель дня</b>: ${dailySeen}/${goal}\n\n` : '') +
+        `🎯 <b>Цель дня</b>: ${dailySeen}/${goal}\n\n` +
         (progress
           ? `📈 <b>Прогресс</b>: выучено ${progress.seenCount} • квиз ${progress.quizCorrect}/${progress.quizTotal}\n\n`
           : '') +
@@ -425,13 +305,10 @@ export default async function handler(req, res) {
         ],
       };
 
-      const kvStart = await getKV();
-      if (kvStart) {
-        keyboard.inline_keyboard.push([
-          { text: '📬 Подписаться', callback_data: 'basic_subscribe_daily' },
-          { text: '❌ Отписаться', callback_data: 'basic_unsubscribe_daily' },
-        ]);
-      }
+      keyboard.inline_keyboard.push([
+        { text: '📬 Подписаться', callback_data: 'basic_subscribe_daily' },
+        { text: '❌ Отписаться', callback_data: 'basic_unsubscribe_daily' },
+      ]);
 
       await sendMessage(token, targetChatId, textMenu, keyboard);
     };
@@ -441,32 +318,26 @@ export default async function handler(req, res) {
     } else if (isHelp || isMenu) {
       await showMainMenu(chatId, false, userLevel, userTopic);
     } else if (isGoal) {
-      if (!kvForUser) {
-        await sendMessage(token, chatId, '⚠️ Цель дня доступна, если включён Vercel KV.', buildQuickNavKeyboard());
-      } else {
-        const goal = await getDailyGoal(kvForUser, chatId);
-        const dailySeen = await getDailySeenCount(kvForUser, chatId);
-        await sendMessage(
-          token,
-          chatId,
-          `🎯 <b>Цель дня</b>\n\nСегодня: <b>${dailySeen}/${goal}</b>\n\nВыберите новую цель:`,
-          {
-            inline_keyboard: [
-              [{ text: '3', callback_data: 'basic_goal_set_3' }, { text: '5', callback_data: 'basic_goal_set_5' }, { text: '10', callback_data: 'basic_goal_set_10' }],
-              [{ text: '15', callback_data: 'basic_goal_set_15' }, { text: '20', callback_data: 'basic_goal_set_20' }],
-              [{ text: '🏠 Меню', callback_data: 'basic_menu' }],
-            ],
-          },
-        );
-      }
+      const goal = await getDailyGoal(chatId);
+      const dailySeen = await getDailySeenCount(chatId);
+      await sendMessage(
+        token,
+        chatId,
+        `🎯 <b>Цель дня</b>\n\nСегодня: <b>${dailySeen}/${goal}</b>\n\nВыберите новую цель:`,
+        {
+          inline_keyboard: [
+            [{ text: '3', callback_data: 'basic_goal_set_3' }, { text: '5', callback_data: 'basic_goal_set_5' }, { text: '10', callback_data: 'basic_goal_set_10' }],
+            [{ text: '15', callback_data: 'basic_goal_set_15' }, { text: '20', callback_data: 'basic_goal_set_20' }],
+            [{ text: '🏠 Меню', callback_data: 'basic_menu' }],
+          ],
+        },
+      );
     } else if (isStats) {
-      if (!kvForUser) {
-        await sendMessage(token, chatId, '⚠️ Статистика доступна, если включён Vercel KV.', buildQuickNavKeyboard());
-      } else {
+      {
         const [progress, seenIds, quizByLevel] = await Promise.all([
-          getUserProgress(kvForUser, chatId),
-          getUserSeenIds(kvForUser, chatId),
-          getQuizProgressByLevel(kvForUser, chatId),
+          getUserQuizProgress(chatId),
+          getUserSeenIds(chatId),
+          getUserQuizProgressByLevel(chatId),
         ]);
         const seenBreakdown = computeSeenBreakdown(seenIds);
         const selection = computeCurrentSelectionProgress(seenIds, userLevel, userTopic);
@@ -514,58 +385,38 @@ export default async function handler(req, res) {
         });
       }
     } else if (isResetStats) {
-      if (!kvForUser) {
-        await sendMessage(token, chatId, '⚠️ Сброс статистики доступен, если включён Vercel KV.', buildQuickNavKeyboard());
-      } else {
-        await sendMessage(
-          token,
-          chatId,
-          '🧹 <b>Сбросить статистику?</b>\n\nЭто удалит:\n- выученные слова (по кнопке «Показать перевод»)\n- результаты квиза\n\nПродолжить?',
-          {
-            inline_keyboard: [
-              [{ text: 'Да, сбросить', callback_data: 'basic_stats_reset_do' }],
-              [{ text: 'Отмена', callback_data: 'basic_stats' }],
-            ],
-          },
-        );
-      }
+      await sendMessage(
+        token,
+        chatId,
+        '🧹 <b>Сбросить статистику?</b>\n\nЭто удалит:\n- выученные слова (по кнопке «Показать перевод»)\n- результаты квиза\n\nПродолжить?',
+        {
+          inline_keyboard: [
+            [{ text: 'Да, сбросить', callback_data: 'basic_stats_reset_do' }],
+            [{ text: 'Отмена', callback_data: 'basic_stats' }],
+          ],
+        },
+      );
     } else if (isSubscribe) {
-      const kvSub = await getKV();
-      if (kvSub) {
-        try {
-            await kvSub.sadd(KV_KEYS.subscribers, String(chatId));
-          await sendMessage(
-            token,
-            chatId,
-            '✅ Вы подписаны на ежедневные простые слова.\nКаждый день бот пришлёт набор базовых слов.\n\nОтписаться: /unsubscribe',
-          );
-        } catch (e) {
-          console.error('KV sadd error (basic):', e?.message || e, e);
-          await sendMessage(
-            token,
-            chatId,
-            '⚠️ Подписка временно недоступна. Попробуйте позже. Команды /words, /learn и /quiz работают без подписки.',
-          );
-        }
+      const ok = await addSubscriber(chatId);
+      if (ok) {
+        await sendMessage(
+          token,
+          chatId,
+          '✅ Вы подписаны на ежедневные простые слова.\nКаждый день бот пришлёт набор базовых слов.\n\nОтписаться: /unsubscribe',
+        );
       } else {
         await sendMessage(
           token,
           chatId,
-          '📬 Подписка на рассылку пока не настроена (нужен Vercel KV). Пользуйтесь командами /words, /learn и /quiz.',
+          '⚠️ Подписка временно недоступна. Попробуйте позже. Команды /words, /learn и /quiz работают без подписки.',
         );
       }
     } else if (isUnsubscribe) {
-      const kvUn = await getKV();
-      if (kvUn) {
-        try {
-          await kvUn.srem(KV_KEYS.subscribers, String(chatId));
-          await sendMessage(token, chatId, 'Вы отписаны от рассылки. Подписаться снова: /subscribe');
-        } catch (e) {
-          console.error('KV srem error (basic):', e?.message || e, e);
-          await sendMessage(token, chatId, 'Не удалось отписаться. Попробуйте позже.');
-        }
+      const ok = await removeSubscriber(chatId);
+      if (ok) {
+        await sendMessage(token, chatId, 'Вы отписаны от рассылки. Подписаться снова: /subscribe');
       } else {
-        await sendMessage(token, chatId, 'Подписка не была активна.');
+        await sendMessage(token, chatId, 'Не удалось отписаться. Попробуйте позже.');
       }
     } else if (isLearn) {
       const pool = filterByTopic(filterByLevel(BASIC_WORDS, userLevel), userTopic);
@@ -649,27 +500,9 @@ export default async function handler(req, res) {
         return;
       }
 
-      const kvCb = await getKV();
-      // уровень для callback (KV) или дефолт A1
-      let cbUserLevel = 'A1';
-      if (kvCb && cbChatId != null) {
-        try {
-          const saved = await kvCb.get(KV_KEYS.userLevel(cbChatId));
-          cbUserLevel = normalizeLevel(saved);
-        } catch (e) {
-          cbUserLevel = 'A1';
-        }
-      }
-      // тема для callback (KV) или ALL
-      let cbUserTopic = 'ALL';
-      if (kvCb && cbChatId != null) {
-        try {
-          const saved = await kvCb.get(KV_KEYS.userTopic(cbChatId));
-          cbUserTopic = normalizeTopic(saved);
-        } catch (e) {
-          cbUserTopic = 'ALL';
-        }
-      }
+      const cbProfile = await getUserProfile(cbChatId);
+      let cbUserLevel = normalizeLevel(cbProfile.level);
+      let cbUserTopic = normalizeTopic(cbProfile.topic);
 
       const answerCb = () =>
         fetch(`https://api.telegram.org/bot${token}/answerCallbackQuery`, {
@@ -681,22 +514,16 @@ export default async function handler(req, res) {
       if (data === 'basic_level_A1' || data === 'basic_level_A2' || data === 'basic_level_B1') {
         const nextLevel = data.replace('basic_level_', '');
         await answerCb();
-        if (kvCb && cbChatId != null) {
-          try {
-            await kvCb.set(KV_KEYS.userLevel(cbChatId), normalizeLevel(nextLevel));
-          } catch (e) {
-            console.error('KV set user level error (basic):', e?.message || e);
+        await setUserLevel(cbChatId, normalizeLevel(nextLevel));
+        // если текущей темы нет в новом уровне — сбрасываем на ALL
+        try {
+          const topics = getTopicsForLevel(nextLevel);
+          if (normalizeTopic(cbUserTopic) !== 'ALL' && !topics.includes(cbUserTopic)) {
+            cbUserTopic = 'ALL';
+            await setUserTopic(cbChatId, 'ALL');
           }
-          // если текущей темы нет в новом уровне — сбрасываем на ALL
-          try {
-            const topics = getTopicsForLevel(nextLevel);
-            if (normalizeTopic(cbUserTopic) !== 'ALL' && !topics.includes(cbUserTopic)) {
-              cbUserTopic = 'ALL';
-              await kvCb.set(KV_KEYS.userTopic(cbChatId), 'ALL');
-            }
-          } catch (e) {
-            // ignore
-          }
+        } catch {
+          // ignore
         }
         await showMainMenu(cbChatId, false, nextLevel, cbUserTopic);
       } else if (data === 'basic_menu') {
@@ -704,12 +531,8 @@ export default async function handler(req, res) {
         await showMainMenu(cbChatId, false, cbUserLevel, cbUserTopic);
       } else if (data === 'basic_goal') {
         await answerCb();
-        if (!kvCb) {
-          await sendMessage(token, cbChatId, '⚠️ Цель дня доступна, если включён Vercel KV.', buildQuickNavKeyboard());
-          return;
-        }
-        const goal = await getDailyGoal(kvCb, cbChatId);
-        const dailySeen = await getDailySeenCount(kvCb, cbChatId);
+        const goal = await getDailyGoal(cbChatId);
+        const dailySeen = await getDailySeenCount(cbChatId);
         await sendMessage(
           token,
           cbChatId,
@@ -724,29 +547,17 @@ export default async function handler(req, res) {
         );
       } else if (data.startsWith('basic_goal_set_')) {
         await answerCb();
-        if (!kvCb) {
-          await sendMessage(token, cbChatId, '⚠️ Цель дня доступна, если включён Vercel KV.', buildQuickNavKeyboard());
-          return;
-        }
         const n = parseInt(data.slice('basic_goal_set_'.length), 10);
         if (Number.isFinite(n) && n > 0 && n <= 50) {
-          try {
-            await kvCb.set(KV_KEYS.userDailyGoal(cbChatId), n);
-          } catch (e) {
-            // ignore
-          }
+          await setDailyGoal(cbChatId, n);
         }
         await showMainMenu(cbChatId, false, cbUserLevel, cbUserTopic);
       } else if (data === 'basic_stats') {
         await answerCb();
-        if (!kvCb) {
-          await sendMessage(token, cbChatId, '⚠️ Статистика доступна, если включён Vercel KV.', buildQuickNavKeyboard());
-          return;
-        }
         const [progress, seenIds, quizByLevel] = await Promise.all([
-          getUserProgress(kvCb, cbChatId),
-          getUserSeenIds(kvCb, cbChatId),
-          getQuizProgressByLevel(kvCb, cbChatId),
+          getUserQuizProgress(cbChatId),
+          getUserSeenIds(cbChatId),
+          getUserQuizProgressByLevel(cbChatId),
         ]);
         const seenBreakdown = computeSeenBreakdown(seenIds);
         const selection = computeCurrentSelectionProgress(seenIds, cbUserLevel, cbUserTopic);
@@ -793,10 +604,6 @@ export default async function handler(req, res) {
         });
       } else if (data === 'basic_stats_reset_confirm') {
         await answerCb();
-        if (!kvCb) {
-          await sendMessage(token, cbChatId, '⚠️ Сброс статистики доступен, если включён Vercel KV.', buildQuickNavKeyboard());
-          return;
-        }
         await sendMessage(
           token,
           cbChatId,
@@ -810,11 +617,7 @@ export default async function handler(req, res) {
         );
       } else if (data === 'basic_stats_reset_do') {
         await answerCb();
-        if (!kvCb) {
-          await sendMessage(token, cbChatId, '⚠️ Сброс статистики доступен, если включён Vercel KV.', buildQuickNavKeyboard());
-          return;
-        }
-        const ok = await resetUserStats(kvCb, cbChatId);
+        const ok = await resetUserStats(cbChatId);
         await sendMessage(
           token,
           cbChatId,
@@ -826,10 +629,6 @@ export default async function handler(req, res) {
       } else if (data.startsWith('basic_topics_page_')) {
         await answerCb();
         const page = parseInt(data.slice('basic_topics_page_'.length), 10);
-        if (!kvCb) {
-          await sendMessage(token, cbChatId, '⚠️ Темы доступны, если включён Vercel KV.');
-          return;
-        }
         await sendMessage(
           token,
           cbChatId,
@@ -840,20 +639,12 @@ export default async function handler(req, res) {
         );
       } else if (data.startsWith('basic_topic_set_')) {
         await answerCb();
-        if (!kvCb) {
-          await sendMessage(token, cbChatId, '⚠️ Темы доступны, если включён Vercel KV.');
-          return;
-        }
         const idxRaw = data.slice('basic_topic_set_'.length);
         const idx = parseInt(idxRaw, 10);
         const topics = getTopicsForLevel(cbUserLevel);
         const nextTopic = idx === -1 ? 'ALL' : topics[idx] || 'ALL';
-        try {
-          await kvCb.set(KV_KEYS.userTopic(cbChatId), normalizeTopic(nextTopic));
-          cbUserTopic = normalizeTopic(nextTopic);
-        } catch (e) {
-          console.error('KV set user topic error (basic):', e?.message || e);
-        }
+        await setUserTopic(cbChatId, normalizeTopic(nextTopic));
+        cbUserTopic = normalizeTopic(nextTopic);
         await showMainMenu(cbChatId, false, cbUserLevel, cbUserTopic);
       } else if (data === 'basic_words_day') {
         const words = filterByTopic(filterByLevel(getWordsOfDayBasic(5, null), cbUserLevel), cbUserTopic);
@@ -904,14 +695,7 @@ export default async function handler(req, res) {
         const word = getWordByIdBasic(wordId);
         if (word) {
           // отметить слово как "выученное" (показали перевод)
-          if (kvCb && cbChatId != null) {
-            try {
-              await kvCb.sadd(KV_KEYS.userSeen(cbChatId), String(wordId));
-              await kvCb.sadd(KV_KEYS.userSeenDaily(cbChatId, todayKey()), String(wordId));
-            } catch (e) {
-              // ignore
-            }
-          }
+          await markWordSeen(cbChatId, wordId);
           let ex = '';
           if (word.example) {
             ex = `\n\n<i>${escapeHtml(word.example)}</i>`;
@@ -987,17 +771,8 @@ export default async function handler(req, res) {
             : `❌ <b>Неверно.</b> Правильно: <code>${escapeHtml(word.term)}</code> — ${escapeHtml(word.translation)}`
           : 'Ошибка';
         // статистика квиза
-        if (kvCb && cbChatId != null) {
-          try {
-            await kvCb.incr(KV_KEYS.userQuizTotal(cbChatId));
-            if (isCorrect) await kvCb.incr(KV_KEYS.userQuizCorrect(cbChatId));
-            const lvl = normalizeLevel(word?.level);
-            await kvCb.incr(KV_KEYS.userQuizTotalByLevel(cbChatId, lvl));
-            if (isCorrect) await kvCb.incr(KV_KEYS.userQuizCorrectByLevel(cbChatId, lvl));
-          } catch (e) {
-            // ignore
-          }
-        }
+        const lvl = normalizeLevel(word?.level);
+        await incrementQuizStats(cbChatId, lvl, isCorrect);
         const hint = '\n\n💡 Можно повторить это слово ещё раз в режиме «📖 Учить слова».';
         const resultMsg = base + hint;
         await editMessageText(token, cbChatId, cb.message.message_id, resultMsg, {
@@ -1010,35 +785,19 @@ export default async function handler(req, res) {
         await answerCb();
       } else if (data === 'basic_subscribe_daily') {
         await answerCb();
-        if (kvCb) {
-          try {
-            await kvCb.sadd(KV_KEYS.subscribers, String(cbChatId));
-            await sendMessage(
-              token,
-              cbChatId,
-              '✅ Подписка оформлена! Каждый день вы будете получать простые слова.\n\nОтписаться: /unsubscribe',
-            );
-          } catch (e) {
-            console.error('KV sadd error (basic cb):', e?.message || e, e);
-            await sendMessage(token, cbChatId, '⚠️ Подписка временно недоступна. Попробуйте /subscribe позже.');
-          }
-        } else {
+        if (await addSubscriber(cbChatId)) {
           await sendMessage(
             token,
             cbChatId,
-            '📬 Подписка пока не настроена на сервере (нужен Vercel KV). Пользуйтесь кнопками «Слова дня», «Учить» и «Квиз».',
+            '✅ Подписка оформлена! Каждый день вы будете получать простые слова.\n\nОтписаться: /unsubscribe',
           );
+        } else {
+          await sendMessage(token, cbChatId, '⚠️ Подписка временно недоступна. Попробуйте /subscribe позже.');
         }
       } else if (data === 'basic_unsubscribe_daily') {
         await answerCb();
-        if (kvCb) {
-          try {
-            await kvCb.srem(KV_KEYS.subscribers, String(cbChatId));
-            await sendMessage(token, cbChatId, 'Вы отписаны. Подписаться снова: /subscribe');
-          } catch (e) {
-            console.error('KV srem error (basic cb):', e?.message || e, e);
-            await sendMessage(token, cbChatId, 'Не удалось отписаться. Попробуйте позже.');
-          }
+        if (await removeSubscriber(cbChatId)) {
+          await sendMessage(token, cbChatId, 'Вы отписаны. Подписаться снова: /subscribe');
         } else {
           await sendMessage(token, cbChatId, 'Подписка не была активна.');
         }

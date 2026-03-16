@@ -5,7 +5,7 @@
  * Тело: { text: "Сообщение для рассылки" }
  */
 
-import { KV_KEYS } from './kvSchema-basic.js';
+import { getAllUsers, removeUserFromAllUsers } from './storage-basic.js';
 
 function escapeHtml(text) {
   if (!text) return '';
@@ -55,11 +55,6 @@ export default async function handler(req, res) {
     return;
   }
 
-  if (!process.env.KV_REST_API_URL || !process.env.KV_REST_API_TOKEN) {
-    res.status(500).json({ ok: false, error: 'Vercel KV not configured' });
-    return;
-  }
-
   const body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
   const rawText = body?.text;
   if (!rawText || typeof rawText !== 'string') {
@@ -67,17 +62,8 @@ export default async function handler(req, res) {
     return;
   }
 
-  let kv;
   try {
-    const kvModule = await import('@vercel/kv');
-    kv = kvModule.kv;
-  } catch (e) {
-    res.status(500).json({ ok: false, error: 'Vercel KV not available' });
-    return;
-  }
-
-  try {
-    const chatIds = await kv.smembers(KV_KEYS.allUsers);
+    const chatIds = await getAllUsers();
     if (!chatIds || chatIds.length === 0) {
       res.status(200).json({ ok: true, sent: 0, total: 0 });
       return;
@@ -91,7 +77,7 @@ export default async function handler(req, res) {
         if (result.ok) {
           sent++;
         } else if (result.error_code === 403 || result.description?.includes('blocked')) {
-          await kv.srem(KV_KEYS.allUsers, chatId);
+          await removeUserFromAllUsers(chatId);
         }
       } catch (e) {
         console.error('Admin broadcast send to', chatId, e);

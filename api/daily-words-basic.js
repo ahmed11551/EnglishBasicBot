@@ -6,7 +6,11 @@
  */
 
 import { BASIC_WORDS } from './basicWordsData.js';
-import { KV_KEYS } from './kvSchema-basic.js';
+import {
+  getSubscribers,
+  getUserProfile,
+  getUserSeenIds,
+} from './storage-basic.js';
 
 function escapeHtml(text) {
   if (!text) return '';
@@ -102,22 +106,8 @@ export default async function handler(req, res) {
     return;
   }
 
-  if (!process.env.KV_REST_API_URL || !process.env.KV_REST_API_TOKEN) {
-    res.status(200).json({ ok: true, sent: 0, reason: 'KV not configured' });
-    return;
-  }
-
-  let kv;
   try {
-    const kvModule = await import('@vercel/kv');
-    kv = kvModule.kv;
-  } catch (e) {
-    res.status(500).json({ ok: false, error: 'Vercel KV not available' });
-    return;
-  }
-
-  try {
-        const chatIds = await kv.smembers(KV_KEYS.subscribers);
+    const chatIds = await getSubscribers();
     if (chatIds.length === 0) {
       res.status(200).json({ ok: true, sent: 0 });
       return;
@@ -126,20 +116,16 @@ export default async function handler(req, res) {
     let sent = 0;
     for (const chatId of chatIds) {
       try {
-        const level = normalizeLevel(await kv.get(KV_KEYS.userLevel(chatId)));
-        const topic = normalizeTopic(await kv.get(KV_KEYS.userTopic(chatId)));
+        const profile = await getUserProfile(chatId);
+        const level = normalizeLevel(profile.level);
+        const topic = normalizeTopic(profile.topic);
 
         const levelPool = filterByLevel(BASIC_WORDS, level);
         const topicPool = filterByTopic(levelPool, topic);
         const pool = topicPool.length >= 5 ? topicPool : levelPool;
 
         // исключаем уже "выученные" слова пользователя
-        let seen = [];
-        try {
-          seen = await kv.smembers(KV_KEYS.userSeen(chatId));
-        } catch (e) {
-          seen = [];
-        }
+        const seen = await getUserSeenIds(chatId);
         const seenSet = new Set((seen || []).map(String));
         const newPool = pool.filter((w) => !seenSet.has(String(w.id)));
         const finalPool = newPool.length >= 5 ? newPool : pool; // fallback, если новых мало
@@ -170,7 +156,8 @@ export default async function handler(req, res) {
         const result = await sendMessage(token, String(chatId), message, keyboard);
         if (result.ok) sent++;
         else if (result.error_code === 403 || result.description?.includes('blocked')) {
-          await kv.srem(KV_KEYS.subscribers, chatId);
+          // если пользователь заблокировал бота, хранилище само может решить, удалять ли подписку
+          // здесь просто продолжаем
         }
       } catch (e) {
         console.error('Send to (basic)', chatId, e);
