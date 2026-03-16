@@ -3,6 +3,7 @@ import { useParams, useLocation, Link } from 'react-router-dom';
 import { MODULES } from '../data/modules';
 import { getCardsByIds } from '../data/cards';
 import { useApp } from '../context/AppContext';
+import { useI18n } from '../i18n';
 import { IconCelebrate } from '../components/Icons';
 import { playCorrect, playWrong, playGoal } from '../utils/sounds';
 import type { Card } from '../types';
@@ -25,6 +26,7 @@ export function Trainer() {
   const location = useLocation();
   const overrideCardIds = (location.state as { overrideCardIds?: OverrideItem[] } | undefined)?.overrideCardIds;
   const { getDueForModule, recordReview, dailyGoal, learnedToday, soundEnabled } = useApp();
+  const { tr } = useI18n();
   const [step, setStep] = useState<'question' | 'result'>('question');
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [queue, setQueue] = useState<Card[]>([]);
@@ -75,8 +77,8 @@ export function Trainer() {
   if (!module && !overrideCardIds?.length) {
     return (
       <div className="trainer">
-        <p>Модуль не найден.</p>
-        <Link to="/">На главную</Link>
+        <p>{tr('Модуль не найден.', 'Module not found.')}</p>
+        <Link to="/">{tr('На главную', 'Back to home')}</Link>
       </div>
     );
   }
@@ -85,14 +87,22 @@ export function Trainer() {
     return (
       <div className="trainer trainer-done">
         <div className="trainer-done-illo" aria-hidden><IconCelebrate /></div>
-        <p className="trainer-done-title">Сессия завершена</p>
-        <p className="trainer-done-count">Повторено слов: {lastSessionSize}</p>
+        <p className="trainer-done-title">{tr('Сессия завершена', 'Session finished')}</p>
+        <p className="trainer-done-count">
+          {tr('Повторено слов:', 'Reviewed words:')} {lastSessionSize}
+        </p>
         <div className="trainer-done-actions">
-          <button type="button" className="btn btn-primary" onClick={startSession}>Повторить</button>
+          <button type="button" className="btn btn-primary" onClick={startSession}>
+            {tr('Повторить', 'Repeat')}
+          </button>
           {overrideCardIds?.length ? (
-            <Link to="/" className="btn btn-ghost">На главную</Link>
+            <Link to="/" className="btn btn-ghost">
+              {tr('На главную', 'Back to home')}
+            </Link>
           ) : (
-            <Link to={`/module/${moduleId}`} className="btn btn-ghost">К модулю</Link>
+            <Link to={`/module/${moduleId}`} className="btn btn-ghost">
+              {tr('К модулю', 'To module')}
+            </Link>
           )}
         </div>
       </div>
@@ -103,25 +113,43 @@ export function Trainer() {
     const canStart = (overrideCardIds?.length ?? 0) > 0 || (module && (dueIds.length > 0 || (module.cardIds?.length ?? 0) > 0));
     return (
       <div className="trainer trainer-start">
-        <p>Тренажёр: выбор перевода.</p>
+        <p>{tr('Тренажёр: выбор перевода.', 'Trainer: choose the translation.')}</p>
         <p className="trainer-desc">
           {overrideCardIds?.length
-            ? `Будут показаны слова, в которых вы чаще ошибаетесь (${overrideCardIds.length}). Выберите правильный перевод.`
+            ? tr(
+                `Будут показаны слова, в которых вы чаще ошибаетесь (${overrideCardIds.length}). Выберите правильный перевод.`,
+                `You will see words you often get wrong (${overrideCardIds.length}). Choose the correct translation.`,
+              )
             : module
-              ? `Будут показаны слова из модуля «${module.titleRu}». Выберите правильный перевод.`
-              : 'Выберите правильный перевод из предложенных вариантов.'}
+              ? tr(
+                  `Будут показаны слова из модуля «${module.titleRu}». Выберите правильный перевод.`,
+                  `You will see words from module "${module.title}". Choose the correct translation.`,
+                )
+              : tr(
+                  'Выберите правильный перевод из предложенных вариантов.',
+                  'Choose the correct translation from the options.',
+                )}
         </p>
         {canStart ? (
           <button type="button" className="btn btn-primary" onClick={startSession}>
-            Начать
+            {tr('Начать', 'Start')}
           </button>
         ) : (
-          <p className="trainer-no-cards">В этом модуле пока нет карточек для тренировки. Попробуйте флэш-карты или другой модуль.</p>
+          <p className="trainer-no-cards">
+            {tr(
+              'В этом модуле пока нет карточек для тренировки. Попробуйте флэш-карты или другой модуль.',
+              'There are no cards to train in this module yet. Try flashcards or another module.',
+            )}
+          </p>
         )}
         {overrideCardIds?.length ? (
-          <Link to="/" className="btn btn-ghost">На главную</Link>
+          <Link to="/" className="btn btn-ghost">
+            {tr('На главную', 'Back to home')}
+          </Link>
         ) : (
-          <Link to={moduleId ? `/module/${moduleId}` : '/'} className="btn btn-ghost">{module ? 'К модулю' : 'На главную'}</Link>
+          <Link to={moduleId ? `/module/${moduleId}` : '/'} className="btn btn-ghost">
+            {module ? tr('К модулю', 'To module') : tr('На главную', 'Back to home')}
+          </Link>
         )}
       </div>
     );
@@ -131,16 +159,24 @@ export function Trainer() {
     return (
       <div className="trainer trainer-done">
         <div className="trainer-done-illo" aria-hidden><IconCelebrate /></div>
-        <p className="trainer-done-title">Сессия завершена</p>
+        <p className="trainer-done-title">{tr('Сессия завершена', 'Session finished')}</p>
         {lastSessionSize > 0 && (
-          <p className="trainer-done-count">Повторено слов: {lastSessionSize}</p>
+          <p className="trainer-done-count">
+            {tr('Повторено слов:', 'Reviewed words:')} {lastSessionSize}
+          </p>
         )}
         <div className="trainer-done-actions">
-          <button type="button" className="btn btn-primary" onClick={startSession}>Повторить</button>
+          <button type="button" className="btn btn-primary" onClick={startSession}>
+            {tr('Повторить', 'Repeat')}
+          </button>
           {overrideCardIds?.length ? (
-            <Link to="/" className="btn btn-ghost">На главную</Link>
+            <Link to="/" className="btn btn-ghost">
+              {tr('На главную', 'Back to home')}
+            </Link>
           ) : (
-            <Link to={`/module/${moduleId}`} className="btn btn-ghost">К модулю</Link>
+            <Link to={`/module/${moduleId}`} className="btn btn-ghost">
+              {tr('К модулю', 'To module')}
+            </Link>
           )}
         </div>
       </div>
@@ -184,7 +220,9 @@ export function Trainer() {
         <span className="trainer-term">{currentCard.term}</span>
         <span className="trainer-transcription">{currentCard.transcription}</span>
       </div>
-      <p className="trainer-instruction">Выберите правильный перевод:</p>
+      <p className="trainer-instruction">
+        {tr('Выберите правильный перевод:', 'Choose the correct translation:')}
+      </p>
       <div className="trainer-options">
         {options.map((card) => {
           const isSelected = selectedId === card.id;
@@ -210,10 +248,10 @@ export function Trainer() {
       {showResult && (
         <div className="trainer-feedback">
           {correct ? (
-            <span className="trainer-feedback-ok">Верно!</span>
+            <span className="trainer-feedback-ok">{tr('Верно!', 'Correct!')}</span>
           ) : (
             <div className="trainer-feedback-fail-wrap">
-              <span className="trainer-feedback-fail-label">Правильный ответ:</span>
+              <span className="trainer-feedback-fail-label">{tr('Правильный ответ:', 'Correct answer:')}</span>
               <p className="trainer-feedback-fail" aria-live="polite">
                 <strong>{currentCard.term}</strong> — {currentCard.translation}
               </p>

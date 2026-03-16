@@ -2,10 +2,12 @@ import { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { searchCards } from '../data/cards';
 import { useApp } from '../context/AppContext';
+import { useI18n } from '../i18n';
 import './Search.css';
 
 export function Search() {
   const { activeModules } = useApp();
+  const { tr } = useI18n();
   const [query, setQuery] = useState('');
   const activeCardIds = useMemo(() => {
     const ids = new Set<string>();
@@ -20,11 +22,11 @@ export function Search() {
         <input
           type="search"
           className="search-input"
-          placeholder="Термин или перевод..."
+          placeholder={tr('Термин или перевод...', 'Term or translation...')}
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           autoFocus
-          aria-label="Поиск по словарю"
+          aria-label={tr('Поиск по словарю', 'Dictionary search')}
         />
       </div>
       {query.trim() ? (
@@ -56,11 +58,15 @@ export function Search() {
               })}
             </ul>
           ) : (
-            <p className="search-empty">Ничего не найдено. Попробуйте другой запрос.</p>
+            <p className="search-empty">
+              {tr('Ничего не найдено. Попробуйте другой запрос.', 'Nothing found. Try another query.')}
+            </p>
           )}
         </div>
       ) : (
-        <p className="search-hint">Введите термин на английском или перевод на русском</p>
+        <p className="search-hint">
+          {tr('Введите термин на английском или перевод на русском', 'Type a term in English or a Russian translation')}
+        </p>
       )}
     </div>
   );

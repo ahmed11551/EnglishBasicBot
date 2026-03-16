@@ -4,12 +4,14 @@ import { MODULES } from '../data/modules';
 import { getCardsByIds } from '../data/cards';
 import { playTerm } from '../utils/audio';
 import { IconSpeaker } from '../components/Icons';
+import { useI18n } from '../i18n';
 import './FlashCards.css';
 
 export function FlashCards() {
   const { moduleId } = useParams<{ moduleId: string }>();
   const [index, setIndex] = useState(0);
   const [flipped, setFlipped] = useState(false);
+  const { tr } = useI18n();
 
   const module = MODULES.find((m) => m.id === moduleId);
   const cards = useMemo(() => {
@@ -20,8 +22,8 @@ export function FlashCards() {
   if (!module || cards.length === 0) {
     return (
       <div className="flash-cards">
-        <p>Нет карточек в этом модуле.</p>
-        <Link to={`/module/${moduleId}`}>Назад</Link>
+        <p>{tr('Нет карточек в этом модуле.', 'No cards in this module.')}</p>
+        <Link to={`/module/${moduleId}`}>{tr('Назад', 'Back')}</Link>
       </div>
     );
   }
@@ -42,14 +44,24 @@ export function FlashCards() {
         type="button"
         className="flash-card"
         onClick={() => setFlipped((f) => !f)}
-        aria-label={flipped ? 'Показать термин' : 'Показать перевод'}
+        aria-label={flipped ? tr('Показать термин', 'Show term') : tr('Показать перевод', 'Show translation')}
       >
         <div className={`flash-card-inner ${flipped ? 'flipped' : ''}`}>
           <div className="flash-card-front">
             <span className="flash-term">{card.term}</span>
             {card.transcription && <span className="flash-transcription">{card.transcription}</span>}
-            <button type="button" className="flash-audio-btn" onClick={(e) => { e.stopPropagation(); playTerm(card.term, card.audioUrl).catch(() => {}); }} aria-label="Прослушать"><IconSpeaker /></button>
-            <span className="flash-hint">Нажмите, чтобы перевернуть</span>
+            <button
+              type="button"
+              className="flash-audio-btn"
+              onClick={(e) => {
+                e.stopPropagation();
+                playTerm(card.term, card.audioUrl).catch(() => {});
+              }}
+              aria-label={tr('Прослушать', 'Play audio')}
+            >
+              <IconSpeaker />
+            </button>
+            <span className="flash-hint">{tr('Нажмите, чтобы перевернуть', 'Tap to flip')}</span>
           </div>
           <div className="flash-card-back">
             <span className="flash-translation">{card.translation}</span>
@@ -63,20 +75,20 @@ export function FlashCards() {
           className="btn btn-secondary"
           disabled={isFirst}
           onClick={() => { setIndex((i) => i - 1); setFlipped(false); }}
-        >
-          Назад
+          >
+          {tr('Назад', 'Prev')}
         </button>
         <button
           type="button"
           className="btn btn-primary"
           disabled={isLast}
           onClick={() => { setIndex((i) => i + 1); setFlipped(false); }}
-        >
-          Далее
+          >
+          {tr('Далее', 'Next')}
         </button>
       </div>
       <Link to={`/module/${moduleId}`} className="flash-back-link btn btn-ghost">
-        К модулю
+        {tr('К модулю', 'To module')}
       </Link>
     </div>
   );

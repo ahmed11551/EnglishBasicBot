@@ -6,6 +6,7 @@ import { useApp } from '../context/AppContext';
 import { playTerm, unlockAudio } from '../utils/audio';
 import { recognizeSpeech, isMatch, isSpeechRecognitionSupported } from '../utils/speechRecognition';
 import { IconSpeaker, IconMic } from '../components/Icons';
+import { useI18n } from '../i18n';
 import './Pronounce.css';
 
 function shuffle<T>(arr: T[]): T[] {
@@ -20,6 +21,7 @@ function shuffle<T>(arr: T[]): T[] {
 export function Pronounce() {
   const { moduleId } = useParams<{ moduleId: string }>();
   const { getDueForModule, recordReview } = useApp();
+  const { tr } = useI18n();
   const [queue, setQueue] = useState<ReturnType<typeof getCardsByIds>>([]);
   const [index, setIndex] = useState(0);
   const [status, setStatus] = useState<'idle' | 'listening' | 'result'>('idle');
@@ -84,8 +86,8 @@ export function Pronounce() {
   if (!module) {
     return (
       <div className="pronounce">
-        <p>Модуль не найден.</p>
-        <Link to="/">На главную</Link>
+        <p>{tr('Модуль не найден.', 'Module not found.')}</p>
+        <Link to="/">{tr('На главную', 'Back to home')}</Link>
       </div>
     );
   }
@@ -93,9 +95,13 @@ export function Pronounce() {
   if (!supported) {
     return (
       <div className="pronounce pronounce-unsupported">
-        <p>Распознавание речи недоступно в этом браузере.</p>
-        <p className="pronounce-hint">Используйте Chrome или Safari на поддерживаемом устройстве.</p>
-        <Link to={`/module/${moduleId}`} className="btn btn-ghost">К модулю</Link>
+        <p>{tr('Распознавание речи недоступно в этом браузере.', 'Speech recognition is not available in this browser.')}</p>
+        <p className="pronounce-hint">
+          {tr('Используйте Chrome или Safari на поддерживаемом устройстве.', 'Use Chrome or Safari on a supported device.')}
+        </p>
+        <Link to={`/module/${moduleId}`} className="btn btn-ghost">
+          {tr('К модулю', 'To module')}
+        </Link>
       </div>
     );
   }
@@ -103,9 +109,16 @@ export function Pronounce() {
   if (queue.length === 0 && index === 0 && lastSessionSize > 0) {
     return (
       <div className="pronounce pronounce-done">
-        <p>Сессия завершена! Вы произнесли {lastSessionSize} слов.</p>
-        <button type="button" className="btn btn-primary" onClick={startSession}>Повторить</button>
-        <Link to={`/module/${moduleId}`} className="btn btn-ghost">К модулю</Link>
+        <p>
+          {tr('Сессия завершена! Вы произнесли', 'Session finished! You pronounced')} {lastSessionSize}{' '}
+          {tr('слов.', 'words.')}
+        </p>
+        <button type="button" className="btn btn-primary" onClick={startSession}>
+          {tr('Повторить', 'Repeat')}
+        </button>
+        <Link to={`/module/${moduleId}`} className="btn btn-ghost">
+          {tr('К модулю', 'To module')}
+        </Link>
       </div>
     );
   }
@@ -113,10 +126,16 @@ export function Pronounce() {
   if (queue.length === 0 && index === 0) {
     return (
       <div className="pronounce pronounce-start">
-        <p>Произношение: прочитайте термин вслух.</p>
-        <p className="pronounce-desc">Озвучьте термин — приложение проверит произношение.</p>
-        <button type="button" className="btn btn-primary" onClick={startSession}>Начать</button>
-        <Link to={`/module/${moduleId}`} className="btn btn-ghost">К модулю</Link>
+        <p>{tr('Произношение: прочитайте термин вслух.', 'Pronunciation: read the term aloud.')}</p>
+        <p className="pronounce-desc">
+          {tr('Озвучьте термин — приложение проверит произношение.', 'Say the term — the app will check your pronunciation.')}
+        </p>
+        <button type="button" className="btn btn-primary" onClick={startSession}>
+          {tr('Начать', 'Start')}
+        </button>
+        <Link to={`/module/${moduleId}`} className="btn btn-ghost">
+          {tr('К модулю', 'To module')}
+        </Link>
       </div>
     );
   }
@@ -127,27 +146,36 @@ export function Pronounce() {
       <p className="pronounce-term">{currentCard.term}</p>
       {currentCard.transcription && <p className="pronounce-transcription">{currentCard.transcription}</p>}
       <button type="button" className="btn btn-secondary pronounce-listen" onClick={handleListen}>
-        <><IconSpeaker /> Прослушать образец</>
+        <>
+          <IconSpeaker /> {tr('Прослушать образец', 'Listen to sample')}
+        </>
       </button>
       {status !== 'listening' && status !== 'result' && (
         <button type="button" className="pronounce-mic-btn" onClick={handleRecord} aria-label="Записать">
-          <><IconMic /> Произнесите термин</>
+          <>
+            <IconMic /> {tr('Произнесите термин', 'Say the term')}
+          </>
         </button>
       )}
-      {status === 'listening' && <p className="pronounce-status">Говорите...</p>}
+      {status === 'listening' && <p className="pronounce-status">{tr('Говорите...', 'Speak...')}</p>}
       {status === 'result' && result && (
         <div className="pronounce-feedback">
           {result.correct ? (
-            <p className="pronounce-ok">Верно!</p>
+            <p className="pronounce-ok">{tr('Верно!', 'Correct!')}</p>
           ) : (
-            <p className="pronounce-fail">Ожидалось: {currentCard.term}{result.spoken ? ` · Вы сказали: ${result.spoken}` : ''}</p>
+            <p className="pronounce-fail">
+              {tr('Ожидалось:', 'Expected:')} {currentCard.term}
+              {result.spoken ? ` · ${tr('Вы сказали:', 'You said:')} ${result.spoken}` : ''}
+            </p>
           )}
           <button type="button" className="btn btn-primary" onClick={handleNext}>
-            {index + 1 >= queue.length ? 'Завершить' : 'Далее'}
+            {index + 1 >= queue.length ? tr('Завершить', 'Finish') : tr('Далее', 'Next')}
           </button>
         </div>
       )}
-      <Link to={`/module/${moduleId}`} className="pronounce-back btn btn-ghost">Выйти</Link>
+      <Link to={`/module/${moduleId}`} className="pronounce-back btn btn-ghost">
+        {tr('Выйти', 'Exit')}
+      </Link>
     </div>
   );
 }

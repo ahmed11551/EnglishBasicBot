@@ -5,6 +5,7 @@ import { getCardsByIds } from '../data/cards';
 import { useApp } from '../context/AppContext';
 import { playTerm, unlockAudio } from '../utils/audio';
 import { IconSpeaker, IconSpinner } from '../components/Icons';
+import { useI18n } from '../i18n';
 import type { Card } from '../types';
 import type { ReviewQuality } from '../types';
 import './Listen.css';
@@ -21,6 +22,7 @@ function shuffle<T>(arr: T[]): T[] {
 export function Listen() {
   const { moduleId } = useParams<{ moduleId: string }>();
   const { getDueForModule, recordReview } = useApp();
+  const { tr } = useI18n();
   const [step, setStep] = useState<'question' | 'result'>('question');
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [queue, setQueue] = useState<Card[]>([]);
@@ -61,8 +63,8 @@ export function Listen() {
   if (!module) {
     return (
       <div className="listen">
-        <p>Модуль не найден.</p>
-        <Link to="/">На главную</Link>
+        <p>{tr('Модуль не найден.', 'Module not found.')}</p>
+        <Link to="/">{tr('На главную', 'Back to home')}</Link>
       </div>
     );
   }
@@ -70,9 +72,16 @@ export function Listen() {
   if (queue.length === 0 && queueIndex === 0 && lastSessionSize > 0) {
     return (
       <div className="listen listen-done">
-        <p>Сессия завершена! Вы прослушали {lastSessionSize} слов.</p>
-        <button type="button" className="btn btn-primary" onClick={startSession}>Повторить</button>
-        <Link to={`/module/${moduleId}`} className="btn btn-ghost">К модулю</Link>
+        <p>
+          {tr('Сессия завершена! Вы прослушали', 'Session finished! You listened to')} {lastSessionSize}{' '}
+          {tr('слов.', 'words.')}
+        </p>
+        <button type="button" className="btn btn-primary" onClick={startSession}>
+          {tr('Повторить', 'Repeat')}
+        </button>
+        <Link to={`/module/${moduleId}`} className="btn btn-ghost">
+          {tr('К модулю', 'To module')}
+        </Link>
       </div>
     );
   }
@@ -80,11 +89,25 @@ export function Listen() {
   if (queue.length === 0 && queueIndex === 0) {
     return (
       <div className="listen listen-start">
-        <p>Аудирование: прослушайте термин и выберите перевод.</p>
-        <p className="listen-desc">Термин будет озвучен — выберите правильный вариант ответа.</p>
-        <p className="listen-mobile-hint">На мобильном: нажмите «Воспроизвести» — звук включится после первого нажатия.</p>
-        <button type="button" className="btn btn-primary" onClick={startSession}>Начать</button>
-        <Link to={`/module/${moduleId}`} className="btn btn-ghost">К модулю</Link>
+        <p>{tr('Аудирование: прослушайте термин и выберите перевод.', 'Listening: hear the term and choose the translation.')}</p>
+        <p className="listen-desc">
+          {tr(
+            'Термин будет озвучен — выберите правильный вариант ответа.',
+            'The term will be spoken — choose the correct answer.',
+          )}
+        </p>
+        <p className="listen-mobile-hint">
+          {tr(
+            'На мобильном: нажмите «Воспроизвести» — звук включится после первого нажатия.',
+            'On mobile: tap "Play" — sound will work after the first tap.',
+          )}
+        </p>
+        <button type="button" className="btn btn-primary" onClick={startSession}>
+          {tr('Начать', 'Start')}
+        </button>
+        <Link to={`/module/${moduleId}`} className="btn btn-ghost">
+          {tr('К модулю', 'To module')}
+        </Link>
       </div>
     );
   }
@@ -115,15 +138,25 @@ export function Listen() {
   return (
     <div className="listen">
       <div className="listen-progress">{queueIndex + 1} / {queue.length}</div>
-      <p className="listen-instruction">Прослушайте термин и выберите перевод:</p>
+      <p className="listen-instruction">
+        {tr('Прослушайте термин и выберите перевод:', 'Listen to the term and choose the translation:')}
+      </p>
       <button
         type="button"
         className="listen-play-btn"
         onClick={handlePlay}
         disabled={playing}
-        aria-label="Прослушать"
+        aria-label={tr('Прослушать', 'Play')}
       >
-        {playing ? <><IconSpinner /> Звучит...</> : <><IconSpeaker /> Воспроизвести</>}
+        {playing ? (
+          <>
+            <IconSpinner /> {tr('Звучит...', 'Playing...')}
+          </>
+        ) : (
+          <>
+            <IconSpeaker /> {tr('Воспроизвести', 'Play')}
+          </>
+        )}
       </button>
       <div className="listen-options">
         {options.map((card) => {
@@ -149,13 +182,21 @@ export function Listen() {
       </div>
       {showResult && (
         <div className="listen-feedback">
-          {correct ? <span className="listen-feedback-ok">Верно!</span> : <span className="listen-feedback-fail">Правильно: {currentCard.translation}</span>}
+          {correct ? (
+            <span className="listen-feedback-ok">{tr('Верно!', 'Correct!')}</span>
+          ) : (
+            <span className="listen-feedback-fail">
+              {tr('Правильно:', 'Correct:')} {currentCard.translation}
+            </span>
+          )}
           <button type="button" className="btn btn-primary" onClick={handleNext}>
-            {queueIndex + 1 >= queue.length ? 'Завершить' : 'Далее'}
+            {queueIndex + 1 >= queue.length ? tr('Завершить', 'Finish') : tr('Далее', 'Next')}
           </button>
         </div>
       )}
-      <Link to={`/module/${moduleId}`} className="listen-back btn btn-ghost">Выйти</Link>
+      <Link to={`/module/${moduleId}`} className="listen-back btn btn-ghost">
+        {tr('Выйти', 'Exit')}
+      </Link>
     </div>
   );
 }

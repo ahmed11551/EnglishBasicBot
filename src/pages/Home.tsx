@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
+import { useI18n } from '../i18n';
 import { getCardById } from '../data/cards';
 import { getGreeting, getRandomGoalPhrase, getRandomTip, getRandomEmptyPhrase } from '../utils/greeting';
 import { EmptyStateIllustration } from '../components/EmptyStateIllustration';
@@ -11,6 +12,7 @@ const ESTIMATED_MINUTES = 5;
 
 export function Home() {
   const { getModuleStats, dailyGoal, learnedToday, streak, getCalendarDays, getTodayCardIds, getRecentlyLearnedCardIds, getMistakeCardIds, lastModuleId, activeModules } = useApp();
+  const { tr, formatMonthYear, weekdayLabel } = useI18n();
   const calendarDays = [...getCalendarDays(7)].reverse();
   const todayCards = getTodayCardIds();
   const progressPct = Math.min(100, (learnedToday / dailyGoal) * 100);
@@ -38,7 +40,7 @@ export function Home() {
         <p className="home-tip">{dailyTip}</p>
       </div>
       <section className={`home-today animate-fade-in ${goalReached ? 'home-today-done' : ''}`}>
-        <h2 className="home-today-title">Сегодня</h2>
+        <h2 className="home-today-title">{tr('Сегодня', 'Today')}</h2>
         <div className={`home-today-ring-wrap ${goalReached ? 'ring-complete' : ''}`}>
           <div className="home-today-ring" aria-hidden>
             <svg viewBox="0 0 36 36" className="ring-svg">
@@ -58,23 +60,32 @@ export function Home() {
             <span className="home-today-of">/ {dailyGoal}</span>
           </div>
         </div>
-        <p className="home-today-label">слов за сегодня <span className="home-today-time">· ~{ESTIMATED_MINUTES} мин</span></p>
+        <p className="home-today-label">
+          {tr('слов за сегодня', 'words today')}{' '}
+          <span className="home-today-time">· ~{ESTIMATED_MINUTES} {tr('мин', 'min')}</span>
+        </p>
         {goalReached && <p className="home-today-message home-today-success">{goalPhrase}</p>}
-        {hasNoProgress && <p className="home-today-message home-today-hint">5 минут в день — и слова запомнятся</p>}
+        {hasNoProgress && (
+          <p className="home-today-message home-today-hint">
+            {tr('5 минут в день — и слова запомнятся', '5 minutes a day — and words will stick')}
+          </p>
+        )}
         {streak > 0 && (
           <div className="home-streak">
             <span className="home-streak-icon"><IconFlame /></span>
             <span className="home-streak-num">{streak}</span>
-            <span className="home-streak-text">дней подряд</span>
+            <span className="home-streak-text">{tr('дней подряд', 'days in a row')}</span>
           </div>
         )}
         {todayCards.length > 0 ? (
           <Link to={`/module/${firstModuleWithDue.id}/trainer`} className="home-cta btn btn-primary">
-            {goalReached ? 'Повторить слова' : `Продолжить: ${firstModuleWithDue.titleRu}`}
+            {goalReached ? tr('Повторить слова', 'Review words') : tr(`Продолжить: ${firstModuleWithDue.titleRu}`, `Continue: ${firstModuleWithDue.title}`)}
           </Link>
         ) : (
           <Link to={`/module/${continueModule?.id ?? activeModules[0]?.id}`} className="home-cta btn btn-primary">
-            {continueModule ? `Продолжить: ${continueModule.titleRu}` : 'Выбрать модуль'}
+            {continueModule
+              ? tr(`Продолжить: ${continueModule.titleRu}`, `Continue: ${continueModule.title}`)
+              : tr('Выбрать модуль', 'Choose a module')}
           </Link>
         )}
       </section>
@@ -82,7 +93,7 @@ export function Home() {
       <section className="home-quick-access animate-fade-in animate-delay-1">
         <h3 className="home-quick-access-title">
           <span className="home-section-icon" aria-hidden><IconLightning /></span>
-          Быстрый доступ
+          {tr('Быстрый доступ', 'Quick access')}
         </h3>
         <div className="home-quick-access-list">
           {quickAccessModules.map((mod) => {
@@ -107,15 +118,15 @@ export function Home() {
       <section className="home-calendar animate-fade-in animate-delay-2">
         <h3 className="home-calendar-title">
           <span className="home-section-icon" aria-hidden><IconCalendar /></span>
-          Неделя
+          {tr('Неделя', 'Week')}
         </h3>
         <p className="home-calendar-month" aria-hidden>
-          {new Date().toLocaleDateString('ru-RU', { month: 'long', year: 'numeric' })}
+          {formatMonthYear(new Date())}
         </p>
         <div className="home-calendar-strip">
           {calendarDays.map(({ date, count }) => {
             const d = new Date(date);
-            const dayName = ['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб'][d.getDay()];
+            const dayName = weekdayLabel(d.getDay());
             const dayNum = d.getDate();
             const isToday = date === todayStr;
             return (
@@ -131,7 +142,7 @@ export function Home() {
 
       {recentlyLearned.length > 0 && (
         <section className="home-recently home-recently-compact animate-fade-in animate-delay-2">
-          <h3 className="home-recently-title">Недавно выученные</h3>
+          <h3 className="home-recently-title">{tr('Недавно выученные', 'Recently learned')}</h3>
           <div className="home-recently-strip" role="list">
             {recentlyLearned.slice(0, 4).map(({ cardId, moduleId }) => {
               const card = getCardById(cardId);
@@ -152,7 +163,7 @@ export function Home() {
         <section className="home-mistakes animate-fade-in animate-delay-2">
           <h3 className="home-mistakes-title">
             <span className="home-section-icon home-mistakes-icon" aria-hidden><IconWarning /></span>
-            Слова, в которых чаще ошибаешься
+            {tr('Слова, в которых чаще ошибаешься', 'Words you often get wrong')}
           </h3>
           <ul className="home-mistakes-list" role="list">
             {mistakeCards.slice(0, 8).map(({ cardId, moduleId }) => {
@@ -172,7 +183,7 @@ export function Home() {
             state={{ overrideCardIds: mistakeCards }}
             className="home-mistakes-cta btn btn-secondary"
           >
-            Повторить
+            {tr('Повторить', 'Review')}
           </Link>
         </section>
       )}
@@ -181,7 +192,7 @@ export function Home() {
         <section className="home-words-preview animate-fade-in animate-delay-3">
           <h3 className="home-words-title">
             <span className="home-section-icon" aria-hidden><IconBook /></span>
-            Слова на сегодня
+            {tr('Слова на сегодня', 'Today\'s words')}
           </h3>
           <ul className="home-words-list">
             {todayCards.slice(0, 5).map(({ cardId, moduleId }) => {
@@ -197,7 +208,12 @@ export function Home() {
               ) : null;
             })}
           </ul>
-          <p className="home-words-hint">Озвучка — в карточках модуля (флэш-карты, раздел «Произношение»)</p>
+          <p className="home-words-hint">
+            {tr(
+              'Озвучка — в карточках модуля (флэш-карты, раздел «Произношение»)',
+              'Audio is available in the module cards (flashcards, "Pronounce" section)',
+            )}
+          </p>
         </section>
       ) : (
         <section className="home-words-empty animate-fade-in animate-delay-3">
