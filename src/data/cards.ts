@@ -1,8 +1,9 @@
 import type { Card } from '../types';
+import type { BasicWord } from '../../api/basicWordsData.generated';
 import { BASIC_WORDS } from '../../api/basicWordsData.generated';
 
 /** Все английские карточки строим из BASIC_WORDS (general English) */
-export const CARDS: Card[] = BASIC_WORDS.map((w) => ({
+export const CARDS: Card[] = BASIC_WORDS.map((w: BasicWord): Card => ({
   id: String(w.id),
   term: String(w.term),
   translation: String(w.translation),
