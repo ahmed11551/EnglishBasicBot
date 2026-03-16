@@ -357,13 +357,16 @@ export default async function handler(req, res) {
         await sendMessage(token, chatId, 'Слова временно недоступны. Попробуйте /menu и выберите другой раздел.');
         return;
       }
-      const msg = `📖 🇬🇧 <b>Как переводится?</b>\n\n<code>${escapeHtml(word.term)}</code>`;
+      await markWordSeen(chatId, word.id);
+      let exBlock = '';
+      if (word.example) exBlock = `\n\nПример: <i>${escapeHtml(word.example)}</i>`;
+      const msg =
+        `📖 🇬🇧 <b>${escapeHtml(word.term)}</b>\n\n` +
+        `Перевод: <tg-spoiler>${escapeHtml(word.translation)}</tg-spoiler>${exBlock}\n\n` +
+        '💡 Нажмите на перевод, чтобы открыть. Кнопка «Следующее слово» — следующая карточка.';
       const keyboard = {
         inline_keyboard: [
-          [
-            { text: 'Показать перевод', callback_data: `basic_learn_show_${word.id}` },
-            { text: 'Следующее →', callback_data: 'basic_learn_next' },
-          ],
+          [{ text: 'Следующее слово 🇬🇧', callback_data: 'basic_learn_next' }],
           [{ text: '🏠 Меню', callback_data: 'basic_menu' }],
         ],
       };
@@ -516,16 +519,25 @@ export default async function handler(req, res) {
         await answerCb();
         const pool = filterByTopic(filterByLevel(BASIC_WORDS, cbUserLevel), cbUserTopic);
         const word = pool.length ? pool[Math.floor(Math.random() * pool.length)] : getRandomWordBasic();
-        const msg = `📖 🇬🇧 <b>Как переводится?</b>\n\n<code>${escapeHtml(word.term)}</code>`;
+        if (!word?.term) {
+          await sendMessage(token, cbChatId, 'Слова временно недоступны. Попробуйте позже.');
+          return;
+        }
+        await markWordSeen(cbChatId, word.id);
+        let exBlock = '';
+        if (word.example) exBlock = `\n\nПример: <i>${escapeHtml(word.example)}</i>`;
+        const msg =
+          `📖 🇬🇧 <b>${escapeHtml(word.term)}</b>\n\n` +
+          `Перевод: <tg-spoiler>${escapeHtml(word.translation)}</tg-spoiler>${exBlock}\n\n` +
+          '💡 Нажмите на перевод, чтобы открыть. Кнопка «Следующее слово» — следующая карточка.';
         await sendMessage(token, cbChatId, msg, {
           inline_keyboard: [
-            [
-              { text: 'Показать перевод', callback_data: `basic_learn_show_${word.id}` },
-              { text: 'Следующее →', callback_data: 'basic_learn_next' },
-            ],
+            [{ text: 'Следующее слово 🇬🇧', callback_data: 'basic_learn_next' }],
             [{ text: '🏠 Меню', callback_data: 'basic_menu' }],
           ],
         });
+      } else if (data.startsWith('basic_learn_pick_')) {
+        await answerCb();
       } else if (data.startsWith('basic_learn_show_')) {
         const wordId = data.slice('basic_learn_show_'.length);
         const word = getWordByIdBasic(wordId);
