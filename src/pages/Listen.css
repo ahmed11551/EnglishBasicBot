@@ -1,0 +1,118 @@
+.listen {
+  padding: 16px 0;
+}
+
+.listen-start,
+.listen-done {
+  text-align: center;
+  padding: 32px 0;
+}
+
+.listen-desc {
+  color: var(--color-text-muted);
+  font-size: 0.9375rem;
+  margin-bottom: 16px !important;
+}
+
+.listen-mobile-hint {
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+  margin: 0 0 24px;
+  padding: 10px 14px;
+  background: var(--color-accent-soft);
+  border-radius: var(--radius);
+  line-height: 1.4;
+}
+
+.listen-progress {
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+  margin-bottom: 20px;
+}
+
+.listen-instruction {
+  text-align: center;
+  margin-bottom: 24px;
+  color: var(--color-text);
+}
+
+.listen-play-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  padding: 20px;
+  font-size: 1.1rem;
+  font-weight: 500;
+  background: var(--color-primary);
+  color: #fff;
+  border-radius: var(--radius);
+  margin-bottom: 24px;
+  transition: opacity 0.2s;
+}
+.listen-play-btn .app-icon { width: 1.2em; height: 1.2em; color: currentColor; }
+.listen-play-btn:hover:not(:disabled) { opacity: 0.9; }
+.listen-play-btn:disabled { opacity: 0.8; }
+
+.listen-options {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.listen-option {
+  width: 100%;
+  padding: 14px 16px;
+  text-align: left;
+  font-size: 1rem;
+  background: var(--color-surface);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius);
+  color: var(--color-text);
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.listen-option:hover:not(:disabled) {
+  border-color: var(--color-accent);
+  background: rgba(43, 108, 176, 0.04);
+}
+
+.listen-option.correct {
+  border-color: var(--color-success);
+  background: rgba(39, 103, 73, 0.08);
+}
+
+.listen-option.wrong {
+  border-color: #dc2626;
+  background: rgba(220, 38, 38, 0.08);
+}
+
+.listen-feedback {
+  margin-top: 20px;
+  padding: 16px;
+  background: var(--color-surface);
+  border-radius: var(--radius);
+  border: 1px solid var(--color-border);
+}
+
+.listen-feedback-ok {
+  color: var(--color-success);
+  font-weight: 500;
+  display: block;
+  margin-bottom: 12px;
+}
+
+.listen-feedback-fail {
+  color: #b91c1c;
+  display: block;
+  margin-bottom: 12px;
+  font-size: 0.9375rem;
+  font-weight: 500;
+}
+
+.listen-back {
+  display: block;
+  margin-top: 16px;
+  text-align: center;
+}

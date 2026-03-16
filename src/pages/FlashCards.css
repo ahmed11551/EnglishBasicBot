@@ -1,0 +1,147 @@
+.flash-cards {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 16px 0;
+}
+
+.flash-progress {
+  width: 100%;
+  max-width: 340px;
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+  margin-bottom: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.flash-progress-bar {
+  flex: 1;
+  height: 6px;
+  background: var(--color-border);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.flash-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--color-ring), var(--color-accent));
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
+.flash-card {
+  width: 100%;
+  max-width: 340px;
+  min-height: 220px;
+  perspective: 1000px;
+  margin-bottom: 24px;
+  cursor: pointer;
+  transition: transform 0.1s ease;
+}
+
+.flash-card:active {
+  transform: scale(0.98);
+}
+
+.flash-card-inner {
+  position: relative;
+  width: 100%;
+  min-height: 220px;
+  transition: transform 0.4s;
+  transform-style: preserve-3d;
+}
+
+.flash-card-inner.flipped {
+  transform: rotateY(180deg);
+}
+
+.flash-card-front,
+.flash-card-back {
+  position: absolute;
+  width: 100%;
+  min-height: 220px;
+  backface-visibility: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: var(--color-surface);
+  border-radius: 20px;
+  border: 1px solid var(--color-border);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  text-align: center;
+  transition: box-shadow var(--transition-fast);
+}
+
+.flash-card:hover .flash-card-front,
+.flash-card:hover .flash-card-back {
+  box-shadow: var(--shadow-card-hover);
+}
+
+.flash-card-back {
+  transform: rotateY(180deg);
+}
+
+.flash-term {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--color-primary);
+  margin-bottom: 8px;
+}
+
+.flash-transcription {
+  font-size: 0.9rem;
+  color: var(--color-text-muted);
+  margin-bottom: 8px;
+}
+
+.flash-audio-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  margin-bottom: 12px;
+  font-size: 1.25rem;
+  background: var(--color-accent-soft);
+  border: none;
+  border-radius: var(--radius-full);
+  color: var(--color-primary);
+  transition: background 0.2s, transform 0.15s;
+}
+.flash-audio-btn .app-icon { width: 1em; height: 1em; }
+.flash-audio-btn:hover { background: rgba(0, 40, 104, 0.1); }
+.flash-audio-btn:active { transform: scale(0.96); }
+
+.flash-hint {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+}
+
+.flash-translation {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--color-primary);
+  margin-bottom: 12px;
+}
+
+.flash-example {
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+  font-style: italic;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.flash-nav {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.flash-back-link {
+  margin-top: 8px;
+}

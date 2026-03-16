@@ -1,0 +1,103 @@
+.pronounce {
+  padding: 16px 0;
+}
+
+.pronounce-start,
+.pronounce-done,
+.pronounce-unsupported {
+  text-align: center;
+  padding: 32px 0;
+}
+
+.pronounce-desc,
+.pronounce-hint {
+  color: var(--color-text-muted);
+  font-size: 0.9375rem;
+  margin-bottom: 24px !important;
+}
+
+.pronounce-progress {
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+  margin-bottom: 20px;
+}
+
+.pronounce-term {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--color-primary);
+  text-align: center;
+  margin-bottom: 4px;
+}
+
+.pronounce-transcription {
+  font-size: 0.9rem;
+  color: var(--color-text-muted);
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.pronounce-listen {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  margin-bottom: 16px;
+}
+
+.pronounce-listen .app-icon,
+.pronounce-mic-btn .app-icon {
+  width: 1.2em;
+  height: 1.2em;
+  color: currentColor;
+}
+
+.pronounce-mic-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  padding: 20px;
+  font-size: 1.1rem;
+  font-weight: 500;
+  background: var(--color-primary);
+  color: #fff;
+  border-radius: var(--radius);
+  margin-bottom: 16px;
+}
+.pronounce-mic-btn:hover { opacity: 0.9; }
+
+.pronounce-status {
+  text-align: center;
+  color: var(--color-accent);
+  margin-bottom: 16px;
+}
+
+.pronounce-feedback {
+  padding: 16px;
+  background: var(--color-surface);
+  border-radius: var(--radius);
+  border: 1px solid var(--color-border);
+  margin-bottom: 16px;
+}
+
+.pronounce-ok {
+  color: var(--color-success);
+  font-weight: 500;
+  margin-bottom: 12px;
+}
+
+.pronounce-fail {
+  color: #b91c1c;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  margin-bottom: 12px;
+}
+
+.pronounce-back {
+  display: block;
+  text-align: center;
+  margin-top: 16px;
+}

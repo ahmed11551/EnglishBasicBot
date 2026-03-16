@@ -1,0 +1,1717 @@
+КАТЕГОРИИ СЛОВ
+ Семья
+
+Слово
+Перевод
+Предложение
+Father
+Отец
+My father is tall.
+Mother
+Мать
+My mother is kind.
+Brother
+Брат
+I have a brother.
+Sister
+Сестра
+My sister is funny.
+Parents
+Родители
+My parents are at home.
+Son
+Сын
+He is my son.
+Daughter
+Дочь
+She is my daughter.
+Family
+Семья
+My family is big.
+Baby
+Малыш
+The baby is sleeping.
+Husband
+Муж
+My husband is a doctor.
+Wife
+Жена
+His wife is beautiful.
+Uncle
+Дядя
+My uncle lives in London.
+Aunt
+Тётя
+My aunt likes to cook.
+Cousin
+Двоюродный брат/сестра
+My cousin is my friend.
+Grandfather
+Дедушка
+My grandfather is old.
+Grandmother
+Бабушка
+My grandmother is nice.
+
+
+Профессии
+
+
+
+Слово
+Перевод
+Предложение
+Doctor
+Доктор
+My brother is a doctor.
+Teacher
+Учитель
+She is a good teacher.
+Nurse
+Медсестра
+The nurse is kind.
+Engineer
+Инженер
+He is an engineer.
+Driver
+Водитель
+My father is a driver.
+Cook
+Повар
+The cook makes good food.
+Farmer
+Фермер
+My uncle is a farmer.
+Policeman
+Полицейский
+The policeman is helpful.
+Firefighter
+Пожарный
+The firefighter is brave.
+Student
+Студент
+I am a student.
+Artist
+Художник
+She is an artist.
+Lawyer
+Юрист
+My aunt is a lawyer.
+Dentist
+Стоматолог
+The dentist is busy.
+Pilot
+Пилот
+The pilot flies a plane.
+Waiter
+Официант
+The waiter brings food.
+Singer
+Певец
+She is a famous singer.
+
+
+
+Город
+
+
+Слово
+Перевод
+Предложение
+City
+Город
+I live in a big city.
+Street
+Улица
+The street is busy.
+Park
+Парк
+The park is beautiful.
+Shop
+Магазин
+The shop is open.
+School
+Школа
+The school is near my house.
+Hospital
+Больница
+The hospital is new.
+Restaurant
+Ресторан
+The restaurant is popular.
+Bank
+Банк
+The bank is closed.
+Bus
+Автобус
+The bus is red.
+Train
+Поезд
+The train is fast.
+Station
+Станция
+The station is crowded.
+Airport
+Аэропорт
+The airport is far.
+Library
+Библиотека
+The library is quiet.
+Museum
+Музей
+The museum is interesting.
+Hotel
+Отель
+The hotel is expensive.
+Market
+Рынок
+The market is busy.
+
+
+Эмоции
+
+
+Слово
+Перевод
+Предложение
+Happy
+Счастливый
+I am happy today.
+Sad
+Грустный
+She feels sad.
+Angry
+Злой
+He is angry with me.
+Scared
+Испуганный
+The child is scared.
+Excited
+Взволнованный
+I am excited about the trip.
+Bored
+Скучающий
+He is bored at home.
+Tired
+Уставший
+She is tired after work.
+Nervous
+Нервный
+I am nervous before the exam.
+Surprised
+Удивленный
+He is surprised by the news.
+Calm
+Спокойный
+She is calm and relaxed.
+Confused
+Смущенный
+He looks confused.
+Proud
+Гордий
+I am proud of my son.
+Lonely
+Одинокий
+She feels lonely sometimes.
+Jealous
+Ревнивый
+He is jealous of his brother.
+Relaxed
+Расслабленный
+I feel relaxed at the beach.
+
+
+
+
+
+
+Страны
+
+
+Слово
+Перевод
+Предложение
+Country
+Страна
+Russia is a big country.
+Russia
+Россия
+I live in Russia.
+USA
+США
+The USA is far away.
+England
+Англия
+England is rainy.
+France
+Франция
+Paris is in France.
+Germany
+Германия
+Germany has many cities.
+Italy
+Италия
+Italy is famous for pasta.
+Japan
+Япония
+Japan is an island country.
+China
+Китай
+China is very large.
+Spain
+Испания
+Spain is warm.
+Canada
+Канада
+Canada is cold in winter.
+Brazil
+Бразилия
+Brazil is in South America.
+India
+Индия
+India is very colorful.
+Australia
+Австралия
+Australia has kangaroos.
+Egypt
+Египет
+Egypt has pyramids.
+Mexico
+Мексика
+Mexico is famous for tacos.
+
+
+Еда и напитки 
+
+Слово
+Перевод
+Предложение
+Bread
+Хлеб
+I eat bread for breakfast.
+Water
+Вода
+I drink water every day.
+Milk
+Молоко
+She likes milk in her coffee.
+Juice
+Сок
+Orange juice is refreshing.
+Coffee
+Кофе
+I have coffee in the morning.
+Tea
+Чай
+He drinks tea in the evening.
+Rice
+Рис
+Rice is a common food.
+Meat
+Мясо
+Meat is delicious.
+Fish
+Рыба
+I like grilled fish.
+Fruit
+Фрукты
+Fruit is healthy.
+Vegetable
+Овощи
+Vegetables are good for you.
+Cheese
+Сыр
+Cheese is on my sandwich.
+Chicken
+Курица
+Chicken is my favorite food.
+Pasta
+Паста
+Pasta is easy to cook.
+Soup
+Суп
+I had soup for lunch.
+Salad
+Салат
+Salad is fresh and tasty.
+Cake
+Торт
+She baked a chocolate cake.
+Sandwich
+Сэндвич
+I made a sandwich for lunch.
+Ice cream
+Мороженое
+Ice cream is a sweet treat.
+
+
+Самые важные глаголы. Часть 1 
+
+Глагол
+Перевод
+Предложение
+Be
+Быть
+I am a student.
+Have
+Иметь
+She has a cat.
+Do
+Делать
+I do my homework.
+Say
+Сказать
+He says hello.
+Go
+Идти
+We go to the park.
+Get
+Получать
+She gets a letter.
+Make
+Делать
+I make dinner.
+Know
+Знать
+They know the answer.
+Take
+Брать
+He takes the bus.
+See
+Видеть
+I see a bird.
+Come
+Приходить
+She comes home at 5 o'clock.
+Think
+Думать
+I think it's a good idea.
+Want
+Хотеть
+They want to play.
+Like
+Нравиться
+I like chocolate.
+Work
+Работать
+He works in an office.
+Talk
+Говорить
+We talk about the movie.
+Use
+Использовать
+She uses a computer.
+Play
+Играть
+The children play outside.
+Help
+Помогать
+Can you help me?
+
+
+
+
+
+
+Самые важные глаголы. Часть 2  
+
+Глагол
+Перевод
+Предложение
+Find
+Найти
+I find my keys.
+Start
+Начинать
+She starts work at 9 a.m.
+Finish
+Заканчивать
+We finish dinner at 7 p.m.
+Love
+Любить
+I love reading books.
+Hate
+Ненавидеть
+He hates doing the dishes.
+Ask
+Спрашивать
+Can I ask you a question?
+Answer
+Отвечать
+She answers the phone.
+Buy
+Покупать
+They buy groceries.
+Sell
+Продавать
+He sells fruits at the market.
+Show
+Показывать
+She shows me her new dress.
+Listen
+Слушать
+I listen to music every day.
+Read
+Читать
+He reads a book.
+Write
+Писать
+She writes a letter.
+Drive
+Водить
+He drives to work.
+Travel
+Путешествовать
+We travel to different countries.
+Sing
+Петь
+She sings in the choir.
+Dance
+Танцевать
+They dance at the party.
+Study
+Учиться
+I study English every day.
+Remember
+Помнить
+I remember his name.
+
+
+
+
+
+
+
+Самые важные глаголы. Часть 3 
+
+Глагол
+Перевод
+Предложение
+Begin
+Начинать
+The lesson begins at 9 a.m.
+End
+Заканчиваться
+The movie ends at 10 p.m.
+Call
+Звонить
+I call my friend every day.
+Speak
+Говорить
+She speaks English very well.
+Understand
+Понимать
+I understand the instructions.
+Build
+Строить
+They build a sandcastle.
+Break
+Ломать
+He breaks the glass by accident.
+Clean
+Убирать
+She cleans the house on weekends.
+Cook
+Готовить
+I cook dinner for my family.
+Draw
+Рисовать
+He draws pictures in his notebook.
+Find
+Находить
+I find this book interesting.
+Forget
+Забывать
+Don’t forget your keys.
+Give
+Давать
+She gives me a gift.
+Join
+Присоединяться
+We join the club together.
+Leave
+Уходить
+They leave the office at 6 p.m.
+Pay
+Платить
+I pay for the tickets.
+Put
+Класть
+She puts the book on the shelf.
+Read
+Читать
+He reads the newspaper daily.
+Remember
+Помнить
+I remember the address.
+Show
+Показывать
+Can you show me the way?
+Stay
+Оставаться
+We stay at a hotel.
+Teach
+Учить
+She teaches math at school.
+Turn
+Поворачивать
+Turn left at the corner.
+Use
+Использовать
+They use a map to find the place.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Погода 
+
+Слово
+Перевод
+Предложение
+Weather
+Погода
+The weather is nice today.
+Sun
+Солнце
+The sun is shining brightly.
+Rain
+Дождь
+It is raining now.
+Snow
+Снег
+The ground is covered with snow.
+Wind
+Ветер
+The wind is strong today.
+Cloud
+Облако
+The sky is full of clouds.
+Hot
+Жарко
+It is very hot outside.
+Cold
+Холодно
+It is cold in the winter.
+Warm
+Тепло
+The weather is warm in spring.
+Cool
+Прохладно
+It is cool in the evening.
+Fog
+Туман
+The fog is thick this morning.
+Storm
+Шторм
+A storm is coming.
+Thunder
+Гром
+I hear thunder in the distance.
+Lightning
+Молния
+There was lightning last night.
+Humid
+Влажный
+It feels very humid today.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Путешествия  
+
+Слово
+Перевод
+Предложение
+Travel
+Путешествовать
+I love to travel to new places.
+Trip
+Поездка
+We have a trip to Paris next week.
+Airport
+Аэропорт
+The airport is very busy.
+Flight
+Рейс
+Our flight is delayed.
+Ticket
+Билет
+I need a ticket for the train.
+Hotel
+Отель
+We are staying at a hotel.
+Reservation
+Резервация
+I made a reservation for dinner.
+Luggage
+Багаж
+My luggage is heavy.
+Map
+Карта
+Can you show me on the map?
+Passport
+Паспорт
+Don’t forget your passport.
+Visa
+Виза
+I need a visa to enter the country.
+Guide
+Гид
+The guide shows us the city.
+Tour
+Экскурсия
+We took a tour of the museum.
+Sightseeing
+Достопримечательности
+We did some sightseeing yesterday.
+Beach
+Пляж
+The beach is sandy and warm.
+Mountain
+Гора
+We climbed a high mountain.
+Cruise
+Круиз
+We went on a cruise last summer.
+Adventure
+Приключение
+The trip was an adventure.
+Culture
+Культура
+I enjoy learning about new cultures.
+
+ Дни недели и месяцы
+
+
+Слово
+Перевод
+Предложение
+Monday
+Понедельник
+Monday is the first day of the week.
+Tuesday
+Вторник
+I have a meeting on Tuesday.
+Wednesday
+Среда
+Wednesday is in the middle of the week.
+Thursday
+Четверг
+My birthday is on Thursday.
+Friday
+Пятница
+We go out on Friday nights.
+Saturday
+Суббота
+Saturday is a day off for many people.
+Sunday
+Воскресенье
+Sunday is a day for relaxing.
+
+
+
+
+January
+Январь
+January is the first month of the year.
+February
+Февраль
+My birthday is in February.
+March
+Март
+Spring begins in March.
+April
+Апрель
+April showers bring May flowers.
+May
+Май
+May is warm and sunny.
+June
+Июнь
+June is the start of summer.
+July
+Июль
+We go on vacation in July.
+August
+Август
+August is hot in many places.
+September
+Сентябрь
+School starts in September.
+October
+Октябрь
+October is known for Halloween.
+November
+Ноябрь
+November is cool and windy.
+December
+Декабрь
+December is the last month of the year.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Животные
+
+Слово
+Перевод
+Предложение
+Dog
+Собака
+The dog is playing in the yard.
+Cat
+Кот
+My cat is very friendly.
+Bird
+Птица
+The bird is singing in the tree.
+Fish
+Рыба
+I have a fish in my aquarium.
+Rabbit
+Кролик
+The rabbit is eating a carrot.
+Horse
+Лошадь
+The horse is running in the field.
+Elephant
+Слон
+The elephant is big and gray.
+Lion
+Лев
+The lion is the king of the jungle.
+Tiger
+Тигр
+Tigers are very strong animals.
+Bear
+Медведь
+The bear is hibernating in winter.
+Monkey
+Обезьяна
+Monkeys live in the jungle.
+Giraffe
+Жираф
+The giraffe has a long neck.
+Zebra
+Зебра
+The zebra has black and white stripes.
+Deer
+Олень
+The deer is grazing in the forest.
+Kangaroo
+Кенгуру
+Kangaroos jump high.
+Dolphin
+Дельфин
+Dolphins are very intelligent.
+Penguin
+Пингвин
+Penguins live in cold climates.
+Owl
+Сова
+The owl is a night bird.
+Snake
+Змея
+The snake is slithering through the grass.
+
+
+ 
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Магазин 
+
+Слово
+Перевод
+Предложение
+Store
+Магазин
+I am going to the store.
+Shop
+Магазин / Бутик
+This shop sells clothes.
+Mall
+Торговый центр
+The mall is very big.
+Cashier
+Кассир
+The cashier is friendly.
+Checkout
+Касса
+I need to go to the checkout.
+Receipt
+Чек
+I received a receipt for my purchase.
+Price
+Цена
+The price of the book is $10.
+Discount
+Скидка
+There is a discount on shoes.
+Sale
+Распродажа
+The sale is this weekend.
+Item
+Товар
+I want to buy this item.
+Bag
+Сумка
+Can I have a bag for my purchases?
+Shelf
+Полка
+The books are on the shelf.
+Product
+Продукт
+This product is new.
+Size
+Размер
+What size is this jacket?
+Stock
+Запас
+We need to check the stock.
+Customer
+Покупатель
+The customer is asking for help.
+Purchase
+Покупка
+I made a purchase yesterday.
+Return
+Возврат
+I want to return this item.
+Checkout counter
+Прилавок
+The checkout counter is near the exit.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Дом
+
+
+Слово
+Перевод
+Предложение
+House
+Дом
+I live in a big house.
+Home
+Дома / Домашний
+I feel comfortable at home.
+Room
+Комната
+This is my bedroom.
+Kitchen
+Кухня
+We cook dinner in the kitchen.
+Bathroom
+Ванная
+The bathroom is next to my room.
+Living room
+Гостиная
+We watch TV in the living room.
+Bedroom
+Спальня
+I sleep in the bedroom.
+Garage
+Гараж
+The car is in the garage.
+Garden
+Сад
+The garden has many flowers.
+Floor
+Пол
+The floor is made of wood.
+Door
+Дверь
+Close the door, please.
+Window
+Окно
+The window is open.
+Roof
+Крыша
+The roof is red.
+Wall
+Стена
+The wall is painted white.
+Staircase
+Лестница
+The staircase is wooden.
+Furniture
+Мебель
+The furniture is very modern.
+Table
+Стол
+The table is in the center of the room.
+Chair
+Стул
+I sit on a chair at my desk.
+Bed
+Кровать
+I have a comfortable bed.
+
+
+
+
+
+Больница  
+
+Слово
+Перевод
+Предложение
+Hospital
+Больница
+I am going to the hospital.
+Doctor
+Врач
+The doctor is very kind.
+Nurse
+Медсестра
+The nurse is checking my blood pressure.
+Patient
+Пациент
+The patient is waiting for the doctor.
+Appointment
+Запись на прием
+I have an appointment at 3 p.m.
+Emergency
+Скорая помощь
+Call emergency if there is a serious problem.
+Medicine
+Лекарство
+I need to take this medicine twice a day.
+Surgery
+Операция
+He needs surgery for his knee.
+Prescription
+Рецепт
+The doctor gave me a prescription.
+Ward
+Палата
+The patient is in the recovery ward.
+Bed
+Кровать
+The hospital bed is very comfortable.
+X-ray
+Рентген
+They took an X-ray of my arm.
+Clinic
+Клиника
+The clinic is open from 9 a.m. to 6 p.m.
+Waiting room
+Ожидальная комната
+The waiting room is very crowded.
+Check-up
+Осмотр
+I need a check-up for my health.
+Ambulance
+Скорая помощь (машина)
+The ambulance arrived quickly.
+Bandage
+Повязка
+The nurse put a bandage on my cut.
+Thermometer
+Термометр
+The doctor used a thermometer to check my temperature.
+Infection
+Инфекция
+He has an infection in his throat.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Болезнь и симптомы
+ 
+
+Слово
+Перевод
+Предложение
+Ill
+Болен
+I feel ill today.
+Sick
+Больной
+She is sick and needs rest.
+Fever
+Жар
+He has a fever of 101 degrees.
+Cough
+Кашель
+I have a bad cough.
+Cold
+Простуда
+I caught a cold last week.
+Headache
+Головная боль
+I have a headache.
+Sore throat
+Боль в горле
+My throat is sore.
+Nausea
+Тошнота
+She feels nausea after eating.
+Vomit
+Рвота
+He is vomiting because of the flu.
+Fatigue
+Усталость
+I am feeling very tired and fatigued.
+Ache
+Боль
+I have an ache in my back.
+Runny nose
+Насморк
+I have a runny nose.
+Diarrhea
+Диарея
+She has diarrhea and needs to stay hydrated.
+Chill
+Озноб
+He is shivering with chills.
+Dizziness
+Головокружение
+I feel dizziness when I stand up.
+Pain
+Боль
+She is in pain from her injury.
+Rash
+Сыпь
+He has a rash on his arm.
+Sneezing
+Чихание
+She is sneezing a lot today.
+Congestion
+Закупорка
+He has nasal congestion.
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Отель  
+
+Слово
+Перевод
+Предложение
+Hotel
+Отель
+We are staying at a hotel.
+Reservation
+Резервация
+I made a reservation for two nights.
+Check-in
+Регистрация
+We need to check-in at the front desk.
+Check-out
+Выезд
+Check-out is at 11 a.m.
+Room
+Номер
+Our room has a nice view.
+Suite
+Люкс
+The suite is very spacious.
+Single room
+Одноместный номер
+I booked a single room for myself.
+Double room
+Двухместный номер
+We need a double room with a queen bed.
+Key
+Ключ
+Can I have the key to my room?
+Front desk
+Ресепшн
+The front desk can help you with anything.
+Elevator
+Лифт
+The elevator is on the right.
+Lobby
+Холл
+The lobby is large and comfortable.
+Concierge
+Консьерж
+The concierge can arrange tours for you.
+Amenities
+Удобства
+The hotel offers many amenities.
+Wi-Fi
+Wi-Fi
+Is Wi-Fi available in the room?
+Breakfast
+Завтрак
+Breakfast is served from 7 to 10 a.m.
+Room service
+Обслуживание в номере
+Room service is available 24/7.
+Booking
+Бронирование
+I confirmed my booking by email.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Ресторан  
+
+Слово
+Перевод
+Предложение
+Restaurant
+Ресторан
+We are going to a restaurant for dinner.
+Menu
+Меню
+Can I see the menu, please?
+Waiter/Waitress
+Официант/Официантка
+The waiter will take your order.
+Table
+Стол
+We have a reservation for a table.
+Reservation
+Резервация
+I made a reservation for 7 p.m.
+Bill
+Счёт
+Can we have the bill, please?
+Tip
+Чаевые
+Don’t forget to leave a tip.
+Order
+Заказ
+I would like to order a pizza.
+Appetizer
+Закуска
+I would like an appetizer to start.
+Main course
+Основное блюдо
+For the main course, I’ll have the steak.
+Dessert
+Десерт
+What desserts do you have?
+Drink
+Напиток
+Can I get a drink with my meal?
+Check
+Счёт (американский вариант)
+Could we get the check, please?
+Wait
+Ожидание
+We have to wait for a table.
+Special
+Специальное блюдо
+What is the special of the day?
+Serving
+Порция
+The serving size is quite large.
+Wait time
+Время ожидания
+The wait time is about 20 minutes.
+Reservation
+Бронирование
+I want to confirm my reservation.
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Хобби
+
+
+Слово
+Перевод
+Предложение
+Hobby
+Хобби
+My hobby is painting.
+Sport
+Спорт
+I play sports every weekend.
+Reading
+Чтение
+I enjoy reading books in my free time.
+Music
+Музыка
+She listens to music every day.
+Playing guitar
+Игра на гитаре
+He is learning to play the guitar.
+Cooking
+Кулинария
+Cooking is a relaxing activity for me.
+Gardening
+Садоводство
+Gardening is my favorite hobby.
+Hiking
+Походы
+We go hiking in the mountains.
+Painting
+Рисование
+She loves painting landscapes.
+Photography
+Фотография
+I take photos of nature.
+Crafting
+Ремесло
+Crafting helps me relax.
+Dancing
+Танцы
+Dancing is fun and energetic.
+Writing
+Письмо
+He writes stories in his free time.
+Fishing
+Рыбалка
+Fishing is a peaceful hobby.
+Collecting
+Коллекционирование
+I collect stamps from different countries.
+Traveling
+Путешествия
+Traveling is a way to explore new places.
+Knitting
+Вязание
+Knitting is a cozy hobby.
+Playing chess
+Игра в шахматы
+We play chess on weekends.
+Yoga
+Йога
+Yoga helps me stay fit and relaxed.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Одежда
+
+
+Слово
+Перевод
+Предложение
+Clothes
+Одежда
+I need new clothes for the summer.
+Shirt
+Рубашка
+He is wearing a blue shirt.
+Pants
+Брюки
+She bought new pants yesterday.
+Skirt
+Юбка
+The skirt is too short for me.
+Dress
+Платье
+She wore a red dress to the party.
+Jacket
+Куртка
+I need a warm jacket for winter.
+Coat
+Пальто
+The coat is very stylish.
+Shoes
+Обувь
+I bought new shoes for the wedding.
+Socks
+Носки
+I need to find matching socks.
+Hat
+Шляпа
+He wore a hat to protect from the sun.
+Gloves
+Перчатки
+The gloves keep my hands warm.
+Scarf
+Шарф
+She wrapped a scarf around her neck.
+Suit
+Костюм
+He wore a suit to the interview.
+Tie
+Галстук
+He put on a tie for the formal event.
+Shorts
+Шорты
+Shorts are good for hot weather.
+T-shirt
+Футболка
+I like to wear t-shirts on weekends.
+Sweater
+Свитер
+The sweater is very comfortable.
+Belt
+Ремень
+He wore a belt with his jeans.
+Pajamas
+Пижама
+She wears pajamas to bed.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Внешность 
+
+Слово
+Перевод
+Предложение
+Appearance
+Внешность
+She has a lovely appearance.
+Tall
+Высокий
+He is very tall and slim.
+Short
+Низкий
+She is shorter than her sister.
+Slim
+Худой
+He is slim and athletic.
+Fat
+Толстый
+The dog is quite fat.
+Hair
+Волосы
+She has long, brown hair.
+Blonde
+Светлый (блондинистый)
+He is a blonde.
+Brown
+Коричневый
+Her hair is dark brown.
+Black
+Черный
+He has black hair and brown eyes.
+Red
+Рыжий
+She has bright red hair.
+Curly
+Кудрявый
+His hair is curly and thick.
+Straight
+Прямой
+She has straight hair.
+Eyes
+Глаза
+He has blue eyes.
+Green
+Зеленый
+Her eyes are green.
+Blue
+Синий
+He has clear blue eyes.
+Brown
+Карие
+She has brown eyes.
+Glasses
+Очки
+He wears glasses for reading.
+Age
+Возраст
+She looks young for her age.
+Young
+Молодой
+He is very young and energetic.
+Old
+Старый
+The old man is very wise.
+Beautiful
+Красивый
+She is a beautiful woman.
+Handsome
+Симпатичный
+He is a handsome man.
+Attractive
+Привлекательный
+The actress is very attractive.
+Friendly
+Дружелюбный
+She has a friendly smile.
+Elegant
+Элегантный
+She wore an elegant dress.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Рутина 
+
+Слово
+Перевод
+Предложение
+Wake up
+Просыпаться
+I wake up at 7 a.m.
+Get up
+Вставать
+I get up right after my alarm rings.
+Brush teeth
+Чистить зубы
+I brush my teeth every morning.
+Shower
+Душ
+I take a shower before breakfast.
+Get dressed
+Одеваться
+I get dressed quickly.
+Have breakfast
+Завтракать
+I have breakfast at 8 a.m.
+Go to work/school
+Идти на работу/в школу
+I go to work at 9 a.m.
+Work
+Работать
+I work from 9 a.m. to 5 p.m.
+Study
+Учиться
+She studies for two hours every day.
+Lunch
+Обед
+I have lunch at 1 p.m.
+Relax
+Расслабляться
+I relax by reading a book.
+Exercise
+Заниматься спортом
+I exercise at the gym in the evening.
+Cook dinner
+Готовить ужин
+I cook dinner at 7 p.m.
+Watch TV
+Смотреть телевизор
+We watch TV after dinner.
+Read
+Читать
+I read a book before bed.
+Go to bed
+Лечь спать
+I go to bed at 10 p.m.
+Sleep
+Спать
+I sleep for about 8 hours.
+Clean
+Убирать
+I clean my room on Saturdays.
+Do laundry
+Стирать одежду
+I do laundry once a week.
+Iron
+Гладить
+I iron my clothes on Sundays.
+Prepare lunch
+Приготовить обед
+I prepare lunch for my family.
+Feed the pet
+Кормить питомца
+I feed the cat in the morning.
+
+ 

@@ -1,0 +1,205 @@
+.app {
+  max-width: 480px;
+  width: 100%;
+  min-height: 100vh;
+  min-height: 100dvh;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  background: var(--color-bg);
+  padding-left: env(safe-area-inset-left, 0);
+  padding-right: env(safe-area-inset-right, 0);
+}
+
+.app-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: rgba(255, 255, 255, 0.82);
+  border-bottom: 1px solid var(--color-border-subtle);
+  padding: 14px 18px;
+  padding-left: max(18px, env(safe-area-inset-left, 0px));
+  padding-right: max(18px, env(safe-area-inset-right, 0px));
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  backdrop-filter: blur(20px) saturate(1.2);
+  -webkit-backdrop-filter: blur(20px) saturate(1.2);
+  box-shadow: 0 1px 0 var(--color-border-subtle);
+}
+
+.app-header h1 {
+  flex: 1;
+  margin: 0;
+  font-size: clamp(1rem, 4.5vw, 1.25rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--color-primary);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (max-width: 380px) {
+  .app-header {
+    padding-left: max(12px, env(safe-area-inset-left, 0px));
+    padding-right: max(12px, env(safe-area-inset-right, 0px));
+  }
+}
+
+.header-back {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  min-height: 44px;
+  margin: -8px 0 -8px -8px;
+  color: var(--color-primary);
+  font-size: 1.35rem;
+  text-decoration: none;
+  line-height: 1;
+  border-radius: var(--radius-full);
+  transition: background var(--transition-fast), opacity var(--transition-fast);
+}
+.header-back:hover {
+  text-decoration: none;
+  background: var(--color-accent-soft);
+  opacity: 1;
+}
+.header-back:active {
+  opacity: 0.8;
+}
+
+.header-search {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  min-height: 44px;
+  margin: -8px -8px -8px 0;
+  color: var(--color-primary);
+  text-decoration: none;
+  border-radius: var(--radius-full);
+  transition: background var(--transition-fast), opacity var(--transition-fast);
+}
+.header-search:hover {
+  text-decoration: none;
+  background: var(--color-accent-soft);
+  opacity: 1;
+}
+
+.app-main {
+  flex: 0 0 auto;
+  padding: 20px 18px;
+  padding-left: max(18px, env(safe-area-inset-left, 0px));
+  padding-right: max(18px, env(safe-area-inset-right, 0px));
+  padding-bottom: calc(76px + var(--safe-bottom));
+  min-width: 0;
+}
+
+@media (max-width: 380px) {
+  .app-main {
+    padding: 12px;
+    padding-left: max(12px, env(safe-area-inset-left, 0px));
+    padding-right: max(12px, env(safe-area-inset-right, 0px));
+    padding-bottom: calc(76px + var(--safe-bottom));
+  }
+}
+
+/* Кнопки 2026: таблетки, плавные переходы */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: var(--touch-min);
+  padding: 14px 26px;
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  border-radius: var(--radius-full);
+  transition: background var(--transition-normal), color var(--transition-fast), transform var(--transition-fast), box-shadow var(--transition-normal);
+  border: none;
+  cursor: pointer;
+}
+.btn:active {
+  transform: scale(0.98);
+}
+
+.btn-primary {
+  background: linear-gradient(180deg, var(--color-primary-light) 0%, var(--color-primary) 100%);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(0, 40, 104, 0.25), 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: linear-gradient(180deg, var(--color-accent) 0%, var(--color-primary-light) 100%);
+  box-shadow: 0 4px 14px rgba(0, 40, 104, 0.3), 0 2px 4px rgba(0, 0, 0, 0.06);
+  transform: translateY(-1px);
+}
+
+.btn-secondary {
+  background: var(--color-surface);
+  color: var(--color-primary);
+  border: 2px solid var(--color-border);
+  font-weight: 600;
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background: var(--color-bg-warm);
+  border-color: var(--color-primary);
+  box-shadow: var(--shadow-card);
+}
+
+.btn-ghost {
+  color: var(--color-accent);
+  background: transparent;
+}
+
+.btn-ghost:hover:not(:disabled) {
+  background: var(--color-accent-soft);
+}
+
+/* Карточки: мягкие тени, крупные скругления */
+.card-surface {
+  background: var(--color-surface-elevated);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  border: 1px solid var(--color-border-subtle);
+  transition: box-shadow var(--transition-normal), transform var(--transition-fast), border-color var(--transition-fast);
+}
+.card-surface:hover {
+  box-shadow: var(--shadow-card-hover);
+  border-color: var(--color-border);
+}
+.card-surface:active {
+  transform: scale(0.995);
+}
+
+.app-footer {
+  padding: 18px 16px;
+  text-align: center;
+  border-top: 1px solid var(--color-border-subtle);
+  margin-top: auto;
+  flex-shrink: 0;
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(8px);
+}
+
+.app-footer-link {
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+  text-decoration: none;
+}
+
+.app-footer-link:hover {
+  color: var(--color-primary);
+  text-decoration: underline;
+}
+
+.app-footer-sep {
+  color: var(--color-text-muted);
+  font-size: 0.8125rem;
+  margin: 0 4px;
+}

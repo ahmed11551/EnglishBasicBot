@@ -1,0 +1,37 @@
+.terms-page {
+  padding: 0 0 32px;
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+.terms-page h1 {
+  font-size: 1.35rem;
+  margin-bottom: 8px;
+}
+
+.terms-updated {
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+  margin-bottom: 24px;
+}
+
+.terms-page section {
+  margin-bottom: 20px;
+}
+
+.terms-page h2 {
+  font-size: 1rem;
+  margin-bottom: 8px;
+}
+
+.terms-page p {
+  font-size: 0.9375rem;
+  line-height: 1.5;
+  color: var(--color-text);
+  margin: 0;
+}
+
+.terms-contact-link {
+  font-weight: 600;
+  color: var(--color-primary);
+}
