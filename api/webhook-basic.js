@@ -277,8 +277,6 @@ export default async function handler(req, res) {
         : '';
 
       const description =
-        `🎚️ <b>Уровень</b>: ${escapeHtml(levelLabel(current))}\n\n` +
-        `📂 <b>Тема</b>: ${escapeHtml(topicLabel(topic))}\n\n` +
         `📌 <b>В подборке</b>: ${poolCount} слов\n\n` +
         `🎯 <b>Цель дня</b>: ${dailySeen}/${goal}\n\n` +
         '📝 <b>Слова дня</b> — 3, 5 или 10 слов на сегодня\n' +
@@ -290,8 +288,6 @@ export default async function handler(req, res) {
 
       const keyboard = {
         inline_keyboard: [
-          buildLevelRow(current),
-          [{ text: '📂 Темы', callback_data: 'basic_topics_page_0' }],
           [{ text: '📝 Слова дня', callback_data: 'basic_words_day' }],
           [{ text: '📖 Учить слова', callback_data: 'basic_learn_next' }],
           [{ text: '🎯 Квиз', callback_data: 'basic_quiz_next' }],
@@ -354,12 +350,11 @@ export default async function handler(req, res) {
       const msg = `📖 🇬🇧 <b>Как переводится?</b>\n\n<code>${escapeHtml(word.term)}</code>`;
       const keyboard = {
         inline_keyboard: [
-          buildLevelRow(userLevel),
           [
             { text: 'Показать перевод', callback_data: `basic_learn_show_${word.id}` },
             { text: 'Следующее →', callback_data: 'basic_learn_next' },
           ],
-          [{ text: '📂 Темы', callback_data: 'basic_topics_page_0' }, { text: '🏠 Меню', callback_data: 'basic_menu' }],
+          [{ text: '🏠 Меню', callback_data: 'basic_menu' }],
         ],
       };
       await sendMessage(token, chatId, msg, keyboard);
@@ -475,9 +470,8 @@ export default async function handler(req, res) {
           `\n\n📌 В подборке: <b>${poolCount}</b> слов`;
         await sendMessage(token, cbChatId, msg, {
           inline_keyboard: [
-            buildLevelRow(cbUserLevel),
             [{ text: '🔄 Ещё слова', callback_data: 'basic_words_more' }],
-            [{ text: '📂 Темы', callback_data: 'basic_topics_page_0' }, { text: '🏠 Меню', callback_data: 'basic_menu' }],
+            [{ text: '🏠 Меню', callback_data: 'basic_menu' }],
           ],
         });
         await answerCb();
@@ -491,9 +485,8 @@ export default async function handler(req, res) {
         ) + `\n\n📌 В подборке: <b>${poolCount}</b> слов`;
         await sendMessage(token, cbChatId, msg, {
           inline_keyboard: [
-            buildLevelRow(cbUserLevel),
             [{ text: '🔄 Ещё слова', callback_data: 'basic_words_more' }],
-            [{ text: '📂 Темы', callback_data: 'basic_topics_page_0' }, { text: '🏠 Меню', callback_data: 'basic_menu' }],
+            [{ text: '🏠 Меню', callback_data: 'basic_menu' }],
           ],
         });
         await answerCb();
@@ -504,12 +497,11 @@ export default async function handler(req, res) {
         const msg = `📖 🇬🇧 <b>Как переводится?</b>\n\n<code>${escapeHtml(word.term)}</code>`;
         await sendMessage(token, cbChatId, msg, {
           inline_keyboard: [
-            buildLevelRow(cbUserLevel),
             [
               { text: 'Показать перевод', callback_data: `basic_learn_show_${word.id}` },
               { text: 'Следующее →', callback_data: 'basic_learn_next' },
             ],
-            [{ text: '📂 Темы', callback_data: 'basic_topics_page_0' }, { text: '🏠 Меню', callback_data: 'basic_menu' }],
+            [{ text: '🏠 Меню', callback_data: 'basic_menu' }],
           ],
         });
       } else if (data.startsWith('basic_learn_show_')) {
@@ -532,10 +524,8 @@ export default async function handler(req, res) {
             )}</i>`;
           await editMessageText(token, cbChatId, cb.message.message_id, msg, {
             inline_keyboard: [
-              buildLevelRow(cbUserLevel),
               [
                 { text: 'Следующее слово →', callback_data: 'basic_learn_next' },
-                { text: '📂 Темы', callback_data: 'basic_topics_page_0' },
               ],
               [{ text: '🏠 Меню', callback_data: 'basic_menu' }],
             ],
@@ -575,9 +565,8 @@ export default async function handler(req, res) {
           '💡 Сначала попробуйте вспомнить сами, потом нажимайте вариант.';
         await sendMessage(token, cbChatId, msg, {
           inline_keyboard: [
-            buildLevelRow(cbUserLevel),
             ...optionsWithData.map((o) => [{ text: o.text, callback_data: o.callbackData }]),
-            [{ text: '📂 Темы', callback_data: 'basic_topics_page_0' }, { text: '🏠 Меню', callback_data: 'basic_menu' }],
+            [{ text: '🏠 Меню', callback_data: 'basic_menu' }],
           ],
         });
       } else if (data.startsWith('quiz_basic_')) {
@@ -599,9 +588,8 @@ export default async function handler(req, res) {
         const resultMsg = base + hint;
         await editMessageText(token, cbChatId, cb.message.message_id, resultMsg, {
           inline_keyboard: [
-            buildLevelRow(cbUserLevel),
             [{ text: 'Следующий вопрос →', callback_data: 'basic_quiz_next' }],
-            [{ text: '📂 Темы', callback_data: 'basic_topics_page_0' }, { text: '🏠 Меню', callback_data: 'basic_menu' }],
+            [{ text: '🏠 Меню', callback_data: 'basic_menu' }],
           ],
         });
         await answerCb();
