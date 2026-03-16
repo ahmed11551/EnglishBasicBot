@@ -62,7 +62,7 @@ export function Pronounce() {
       setResult({ correct, spoken });
       setStatus('result');
       recordReview(currentCard.id, module.id, correct ? 'good' : 'again');
-    } catch (e) {
+    } catch {
       setResult({ correct: false, spoken: '' });
       setStatus('result');
       recordReview(currentCard.id, module.id, 'again');

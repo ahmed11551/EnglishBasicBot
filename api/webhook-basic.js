@@ -23,6 +23,7 @@ import {
   getUserSeenIds,
   incrementQuizStats,
   markWordSeen,
+  removeSubscriber,
   resetUserStats,
   setDailyGoal,
   setUserLevel,
@@ -82,6 +83,11 @@ function filterByTopic(words, topic) {
   const t = normalizeTopic(topic);
   if (t === 'ALL') return words;
   return words.filter((w) => String(w?.moduleRu || '').trim() === t);
+}
+
+/** Пул слов для «Ещё слова»: всегда вся база (A1–B1), чтобы слова были разные и по сложности. */
+function getWordsMorePool() {
+  return BASIC_WORDS.length ? BASIC_WORDS : [];
 }
 
 function getTopicsForLevel(level) {
@@ -347,6 +353,10 @@ export default async function handler(req, res) {
     } else if (isLearn) {
       const pool = filterByTopic(filterByLevel(BASIC_WORDS, userLevel), userTopic);
       const word = pool.length ? pool[Math.floor(Math.random() * pool.length)] : getRandomWordBasic();
+      if (!word?.term) {
+        await sendMessage(token, chatId, 'Слова временно недоступны. Попробуйте /menu и выберите другой раздел.');
+        return;
+      }
       const msg = `📖 🇬🇧 <b>Как переводится?</b>\n\n<code>${escapeHtml(word.term)}</code>`;
       const keyboard = {
         inline_keyboard: [
@@ -359,9 +369,12 @@ export default async function handler(req, res) {
       };
       await sendMessage(token, chatId, msg, keyboard);
     } else if (isQuiz) {
-      // вопрос только из выбранного уровня
       const pool = filterByTopic(filterByLevel(BASIC_WORDS, userLevel), userTopic);
       const baseWord = pool.length ? pool[Math.floor(Math.random() * pool.length)] : getRandomWordBasic();
+      if (!baseWord?.term) {
+        await sendMessage(token, chatId, 'Слова временно недоступны. Попробуйте /menu и выберите другой раздел.');
+        return;
+      }
       const basePool = pool.length ? pool : filterByLevel(BASIC_WORDS, userLevel);
       const others = basePool.filter((w) => w.id !== baseWord.id);
       const wrong = [];
@@ -397,14 +410,16 @@ export default async function handler(req, res) {
       };
       await sendMessage(token, chatId, msg, keyboard);
     } else if (isWords) {
-      const goal = await getDailyGoal(chatId); // 3,5,10
+      const goal = await getDailyGoal(chatId);
       const words = filterByTopic(filterByLevel(getWordsOfDayBasic(goal, null), userLevel), userTopic);
       const poolCount = filterByTopic(filterByLevel(BASIC_WORDS, userLevel), userTopic).length;
+      const title = `📚 🇬🇧 <b>Слова дня — ${escapeHtml(levelLabel(userLevel))}</b>\n${escapeHtml(topicLabel(userTopic))}.`;
+      const body =
+        words.length > 0
+          ? formatWordsMessage(words, title)
+          : `${title}\n\nВ этой подборке пока нет слов. Нажмите «Ещё слова» для случайных слов из всей базы.`;
       const msg =
-        formatWordsMessage(
-          words,
-          `📚 🇬🇧 <b>Слова дня — ${escapeHtml(levelLabel(userLevel))}</b>\n${escapeHtml(topicLabel(userTopic))}.`,
-        ) +
+        body +
         `\n\n📌 В подборке: <b>${poolCount}</b> слов\n\n` +
         '💡 Совет: повторите вслух и придумайте своё предложение.';
       const wButtons = [
@@ -465,9 +480,12 @@ export default async function handler(req, res) {
         const goal = await getDailyGoal(cbChatId);
         const words = filterByTopic(filterByLevel(getWordsOfDayBasic(goal, null), cbUserLevel), cbUserTopic);
         const poolCount = filterByTopic(filterByLevel(BASIC_WORDS, cbUserLevel), cbUserTopic).length;
-        const msg =
-          formatWordsMessage(words, `📚 🇬🇧 <b>Слова дня — ${escapeHtml(levelLabel(cbUserLevel))}</b>`) +
-          `\n\n📌 В подборке: <b>${poolCount}</b> слов`;
+        const title = `📚 🇬🇧 <b>Слова дня — ${escapeHtml(levelLabel(cbUserLevel))}</b>`;
+        const body =
+          words.length > 0
+            ? formatWordsMessage(words, title)
+            : `${title}\n\nВ этой подборке пока нет слов. Нажмите «Ещё слова» для случайных слов из всей базы.`;
+        const msg = body + `\n\n📌 В подборке: <b>${poolCount}</b> слов`;
         await sendMessage(token, cbChatId, msg, {
           inline_keyboard: [
             [{ text: '🔄 Ещё слова', callback_data: 'basic_words_more' }],
@@ -476,13 +494,17 @@ export default async function handler(req, res) {
         });
         await answerCb();
       } else if (data === 'basic_words_more') {
-        const goal = await getDailyGoal(cbChatId);
-        const words = filterByTopic(filterByLevel(getRandomWordsBasic(goal), cbUserLevel), cbUserTopic);
-        const poolCount = filterByTopic(filterByLevel(BASIC_WORDS, cbUserLevel), cbUserTopic).length;
-        const msg = formatWordsMessage(
-          words,
-          `📚 🇬🇧 <b>Ещё слова — ${escapeHtml(levelLabel(cbUserLevel))}</b>\n${escapeHtml(topicLabel(cbUserTopic))}.`,
-        ) + `\n\n📌 В подборке: <b>${poolCount}</b> слов`;
+        const pool = getWordsMorePool();
+        const poolCount = pool.length;
+        const word = pool.length
+          ? pool[Math.floor(Math.random() * pool.length)]
+          : getRandomWordBasic();
+        const term = (word && word.term) ? escapeHtml(word.term) : '';
+        const wordLevel = word?.level ? ` (${escapeHtml(normalizeLevel(word.level))})` : '';
+        const msg =
+          `📚 🇬🇧 🇺🇸 <b>Ещё слова</b> — разные по сложности\n\n` +
+          `${term ? `<b>${term}</b>` : ''}${wordLevel}\n\n` +
+          `📌 В подборке: <b>${poolCount}</b> слов`;
         await sendMessage(token, cbChatId, msg, {
           inline_keyboard: [
             [{ text: '🔄 Ещё слова', callback_data: 'basic_words_more' }],
@@ -508,27 +530,24 @@ export default async function handler(req, res) {
         const wordId = data.slice('basic_learn_show_'.length);
         const word = getWordByIdBasic(wordId);
         if (word) {
-          // отметить слово как "выученное" (показали перевод)
           await markWordSeen(cbChatId, wordId);
           let ex = '';
-          if (word.example) {
-            ex = `\n\n<i>${escapeHtml(word.example)}</i>`;
-          }
+          if (word.example) ex = `\n\n<i>${escapeHtml(word.example)}</i>`;
           let exRu = '';
-          if (word.exampleRu) {
-            exRu = `\n<i>${escapeHtml(word.exampleRu)}</i>`;
-          }
+          if (word.exampleRu) exRu = `\n<i>${escapeHtml(word.exampleRu)}</i>`;
           const msg =
             `📖 🇬🇧 <b>${escapeHtml(word.term)}</b>\n\n→ ${escapeHtml(word.translation)}${ex}${exRu}\n\n<i>${escapeHtml(
-              word.moduleRu,
+              word.moduleRu || '',
             )}</i>`;
           await editMessageText(token, cbChatId, cb.message.message_id, msg, {
             inline_keyboard: [
-              [
-                { text: 'Следующее слово →', callback_data: 'basic_learn_next' },
-              ],
+              [{ text: 'Следующее слово →', callback_data: 'basic_learn_next' }],
               [{ text: '🏠 Меню', callback_data: 'basic_menu' }],
             ],
+          });
+        } else {
+          await editMessageText(token, cbChatId, cb.message.message_id, 'Слово не найдено.', {
+            inline_keyboard: [[{ text: '🏠 Меню', callback_data: 'basic_menu' }]],
           });
         }
         await answerCb();

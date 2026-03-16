@@ -145,10 +145,6 @@ export default async function handler(req, res) {
         const keyboard = {
           inline_keyboard: [
             [{ text: '📖 Учить слова', callback_data: 'basic_learn_next' }],
-            [
-              { text: '📊 Статистика', callback_data: 'basic_stats' },
-              { text: '📂 Темы', callback_data: 'basic_topics_page_0' },
-            ],
             [{ text: '🏠 Меню', callback_data: 'basic_menu' }],
           ],
         };

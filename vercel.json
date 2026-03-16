@@ -7,7 +7,7 @@
   ],
   "crons": [
     {
-      "path": "/api/daily-words",
+      "path": "/api/daily-words-basic",
       "schedule": "0 9 * * *"
     }
   ]
