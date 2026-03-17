@@ -337,10 +337,12 @@ export default async function handler(req, res) {
         { text: '❌ Отписаться', callback_data: 'basic_unsubscribe_daily' },
       ]);
 
+      // Меню не сгорает: при возврате в меню редактируем сообщение, а не удаляем
       if (editMessageId != null) {
-        await deleteMessage(token, targetChatId, editMessageId);
+        await editMessageText(token, targetChatId, editMessageId, textMenu, keyboard);
+      } else {
+        await sendMessage(token, targetChatId, textMenu, keyboard);
       }
-      await sendMessage(token, targetChatId, textMenu, keyboard);
     };
 
     if (isStart) {
