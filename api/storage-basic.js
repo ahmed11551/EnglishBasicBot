@@ -185,6 +185,45 @@ export async function resetEditChainCount(chatId) {
   }
 }
 
+// Id сообщения меню (шапка не сгорает; не редактируем и не удаляем его)
+// ALTER TABLE basic_users ADD COLUMN IF NOT EXISTS menu_message_id bigint;
+export async function getMenuMessageId(chatId) {
+  const supabase = getSupabase();
+  if (!supabase || chatId == null) return null;
+  try {
+    const { data, error } = await supabase
+      .from('basic_users')
+      .select('menu_message_id')
+      .eq('chat_id', Number(chatId))
+      .maybeSingle();
+    if (error) return null;
+    const id = data?.menu_message_id;
+    return id != null ? Number(id) : null;
+  } catch {
+    return null;
+  }
+}
+
+export async function setMenuMessageId(chatId, messageId) {
+  const supabase = getSupabase();
+  if (!supabase || chatId == null || messageId == null) return false;
+  try {
+    await ensureUser(chatId);
+    const { error } = await supabase
+      .from('basic_users')
+      .update({ menu_message_id: Number(messageId) })
+      .eq('chat_id', Number(chatId));
+    if (error) {
+      console.error('Supabase setMenuMessageId error:', error.message);
+      return false;
+    }
+    return true;
+  } catch (e) {
+    console.error('Supabase setMenuMessageId error:', e?.message || e);
+    return false;
+  }
+}
+
 // Daily goal / progress -------------------------------------------------------
 
 export function todayKey() {

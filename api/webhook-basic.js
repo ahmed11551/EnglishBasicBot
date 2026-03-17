@@ -18,14 +18,18 @@ import {
   getDailyGoal,
   getDailySeenCount,
   getUserProfile,
+  getMenuMessageId,
   getUserQuizProgress,
   getUserQuizProgressByLevel,
   getUserSeenIds,
+  incrementAndGetEditChainCount,
   incrementQuizStats,
   markWordSeen,
   removeSubscriber,
+  resetEditChainCount,
   resetUserStats,
   setDailyGoal,
+  setMenuMessageId,
   setUserLevel,
   setUserTopic,
 } from './storage-basic.js';
@@ -337,11 +341,11 @@ export default async function handler(req, res) {
         { text: '❌ Отписаться', callback_data: 'basic_unsubscribe_daily' },
       ]);
 
-      // Меню не сгорает: при возврате в меню редактируем сообщение, а не удаляем
       if (editMessageId != null) {
         await editMessageText(token, targetChatId, editMessageId, textMenu, keyboard);
       } else {
-        await sendMessage(token, targetChatId, textMenu, keyboard);
+        const res = await sendMessage(token, targetChatId, textMenu, keyboard);
+        if (res?.result?.message_id) await setMenuMessageId(targetChatId, res.result.message_id);
       }
     };
 
@@ -491,6 +495,25 @@ export default async function handler(req, res) {
         });
 
       const cbMsgId = cb.message?.message_id;
+      // три карточки в одном сообщении, на 4-м нажатии сгорает
+      const BURN_AFTER = 4;
+
+      /** Шапка (меню) не трогаем; контент раздела — редактируем или через BURN_AFTER нажатий удаляем и шлём новое. */
+      const sectionUpdate = async (text, replyMarkup) => {
+        const menuId = await getMenuMessageId(cbChatId);
+        if (menuId == null || cbMsgId === menuId) {
+          await sendMessage(token, cbChatId, text, replyMarkup);
+          return;
+        }
+        const count = await incrementAndGetEditChainCount(cbChatId);
+        if (count >= BURN_AFTER) {
+          await deleteMessage(token, cbChatId, cbMsgId);
+          await sendMessage(token, cbChatId, text, replyMarkup);
+          await resetEditChainCount(cbChatId);
+        } else {
+          await editMessageText(token, cbChatId, cbMsgId, text, replyMarkup);
+        }
+      };
 
       if (data === 'basic_menu') {
         await answerCb();
@@ -499,18 +522,15 @@ export default async function handler(req, res) {
         await answerCb();
         const goal = await getDailyGoal(cbChatId);
         const dailySeen = await getDailySeenCount(cbChatId);
-        await sendMessage(
-          token,
-          cbChatId,
-          `🎯 <b>Цель дня</b>\n\nСегодня: <b>${dailySeen}/${goal}</b>\n\nВыберите новую цель:`,
-          {
-            inline_keyboard: [
-              [{ text: '3', callback_data: 'basic_goal_set_3' }, { text: '5', callback_data: 'basic_goal_set_5' }, { text: '10', callback_data: 'basic_goal_set_10' }],
-              [{ text: '15', callback_data: 'basic_goal_set_15' }, { text: '20', callback_data: 'basic_goal_set_20' }],
-              [{ text: '🏠 Меню', callback_data: 'basic_menu' }],
-            ],
-          },
-        );
+        const goalText = `🎯 <b>Цель дня</b>\n\nСегодня: <b>${dailySeen}/${goal}</b>\n\nВыберите новую цель:`;
+        const goalKb = {
+          inline_keyboard: [
+            [{ text: '3', callback_data: 'basic_goal_set_3' }, { text: '5', callback_data: 'basic_goal_set_5' }, { text: '10', callback_data: 'basic_goal_set_10' }],
+            [{ text: '15', callback_data: 'basic_goal_set_15' }, { text: '20', callback_data: 'basic_goal_set_20' }],
+            [{ text: '🏠 Меню', callback_data: 'basic_menu' }],
+          ],
+        };
+        await sectionUpdate(goalText, goalKb);
       } else if (data.startsWith('basic_goal_set_')) {
         await answerCb();
         const n = parseInt(data.slice('basic_goal_set_'.length), 10);
@@ -528,7 +548,7 @@ export default async function handler(req, res) {
         const title = `📚 🇬🇧 <b>Слова дня — ${escapeHtml(levelLabel(cbUserLevel))}</b>`;
         const body = formatWordsMessage(words, title);
         const msg = body + `\n\n📌 В подборке: <b>${poolCount}</b> слов`;
-        await sendMessage(token, cbChatId, msg, {
+        await sectionUpdate(msg, {
           inline_keyboard: [
             [{ text: '🔄 Ещё слова', callback_data: 'basic_words_more' }],
             [{ text: '🏠 Меню', callback_data: 'basic_menu' }],
@@ -547,7 +567,7 @@ export default async function handler(req, res) {
           `📚 🇬🇧 🇺🇸 <b>Ещё слова</b> — разные по сложности\n\n` +
           `${term ? `<b>${term}</b>` : ''}${wordLevel}\n\n` +
           `📌 В подборке: <b>${poolCount}</b> слов`;
-        await sendMessage(token, cbChatId, msg, {
+        await sectionUpdate(msg, {
           inline_keyboard: [
             [{ text: '🔄 Ещё слова', callback_data: 'basic_words_more' }],
             [{ text: '🏠 Меню', callback_data: 'basic_menu' }],
@@ -559,7 +579,7 @@ export default async function handler(req, res) {
         const words = getRandomWordsFromPool(pool, 1);
         const word = words[0] || getRandomWordBasic();
         if (!word?.term) {
-          await sendMessage(token, cbChatId, 'Слова временно недоступны. Попробуйте позже.', {
+          await sectionUpdate('Слова временно недоступны. Попробуйте позже.', {
             inline_keyboard: [[{ text: '🏠 Меню', callback_data: 'basic_menu' }]],
           });
           return;
@@ -571,7 +591,7 @@ export default async function handler(req, res) {
           `📖 🇬🇧 <b>${escapeHtml(word.term)}</b>\n\n` +
           `Перевод: <tg-spoiler>${escapeHtml(word.translation)}</tg-spoiler>${exBlock}\n\n` +
           '💡 Нажмите на перевод, чтобы открыть. Кнопка «Следующее слово» — следующая карточка.';
-        await sendMessage(token, cbChatId, msg, {
+        await sectionUpdate(msg, {
           inline_keyboard: [
             [{ text: 'Следующее слово 🇬🇧', callback_data: 'basic_learn_next' }],
             [{ text: '🏠 Меню', callback_data: 'basic_menu' }],
@@ -593,14 +613,14 @@ export default async function handler(req, res) {
             `📖 🇬🇧 <b>${escapeHtml(word.term)}</b>\n\n→ ${escapeHtml(word.translation)}${ex}${exRu}\n\n<i>${escapeHtml(
               word.moduleRu || '',
             )}</i>`;
-          await sendMessage(token, cbChatId, msg, {
+          await sectionUpdate(msg, {
             inline_keyboard: [
               [{ text: 'Следующее слово →', callback_data: 'basic_learn_next' }],
               [{ text: '🏠 Меню', callback_data: 'basic_menu' }],
             ],
           });
         } else {
-          await sendMessage(token, cbChatId, 'Слово не найдено.', {
+          await sectionUpdate('Слово не найдено.', {
             inline_keyboard: [[{ text: '🏠 Меню', callback_data: 'basic_menu' }]],
           });
         }
@@ -636,7 +656,7 @@ export default async function handler(req, res) {
           `🎯 🇬🇧 <b>Как переводится</b> <code>${escapeHtml(word.term)}</code>?\n\n` +
           'Выберите правильный перевод.\n\n' +
           '💡 Сначала попробуйте вспомнить сами, потом нажимайте вариант.';
-        await sendMessage(token, cbChatId, msg, {
+        await sectionUpdate(msg, {
           inline_keyboard: [
             ...optionsWithData.map((o) => [{ text: o.text, callback_data: o.callbackData }]),
             [{ text: '🏠 Меню', callback_data: 'basic_menu' }],
@@ -654,13 +674,12 @@ export default async function handler(req, res) {
             ? `✅ <b>Верно!</b>\n\n<code>${escapeHtml(word.term)}</code> — ${escapeHtml(word.translation)}`
             : `❌ <b>Неверно.</b> Правильно: <code>${escapeHtml(word.term)}</code> — ${escapeHtml(word.translation)}`
           : 'Ошибка';
-        // статистика квиза
         const lvl = normalizeLevel(word?.level);
         await incrementQuizStats(cbChatId, lvl, isCorrect);
         const hint = '\n\n💡 Можно повторить это слово ещё раз в режиме «📖 Учить слова».';
         const resultMsg = base + hint;
         await answerCb();
-        await sendMessage(token, cbChatId, resultMsg, {
+        await sectionUpdate(resultMsg, {
           inline_keyboard: [
             [{ text: 'Следующий вопрос →', callback_data: 'basic_quiz_next' }],
             [{ text: '🏠 Меню', callback_data: 'basic_menu' }],
@@ -671,14 +690,14 @@ export default async function handler(req, res) {
         const subMsg = (await addSubscriber(cbChatId))
           ? '✅ Подписка оформлена! Каждый день вы будете получать простые слова.\n\nОтписаться: /unsubscribe'
           : '⚠️ Подписка временно недоступна. Попробуйте /subscribe позже.';
-        await sendMessage(token, cbChatId, subMsg, {
+        await sectionUpdate(subMsg, {
           inline_keyboard: [[{ text: '🏠 Меню', callback_data: 'basic_menu' }]],
         });
       } else if (data === 'basic_unsubscribe_daily') {
         await answerCb();
         const ok = await removeSubscriber(cbChatId);
         const unsubMsg = ok ? 'Вы отписаны. Подписаться снова: /subscribe' : 'Подписка не была активна.';
-        await sendMessage(token, cbChatId, unsubMsg, {
+        await sectionUpdate(unsubMsg, {
           inline_keyboard: [[{ text: '🏠 Меню', callback_data: 'basic_menu' }]],
         });
       } else {
