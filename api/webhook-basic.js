@@ -212,6 +212,19 @@ function formatWordsMessage(words, title) {
   return `${title}\n\n${lines.join('\n\n')}`;
 }
 
+/** Как formatWordsMessage, но перевод скрыт в спойлере (нажми, чтобы открыть). */
+function formatWordsMessageWithSpoiler(words, title) {
+  const lines = words.map((w, i) => {
+    const num = i + 1;
+    let ex = '';
+    if (w.example) {
+      ex = `\n   <i>${escapeHtml(w.example)}</i>`;
+    }
+    return `${num}. <b>${escapeHtml(w.term)}</b> — <tg-spoiler>${escapeHtml(w.translation)}</tg-spoiler>${ex}`;
+  });
+  return `${title}\n\n${lines.join('\n\n')}\n\n💡 Нажмите на перевод, чтобы открыть.`;
+}
+
 async function sendMessage(token, chatId, text, replyMarkup = null) {
   const body = {
     chat_id: chatId,
@@ -461,7 +474,7 @@ export default async function handler(req, res) {
       if (words.length === 0) words = getRandomWordsFromPool(pool, goal);
       const poolCount = pool.length;
       const title = `📚 🇬🇧 <b>Слова дня — ${escapeHtml(levelLabel(userLevel))}</b>\n${escapeHtml(topicLabel(userTopic))}.`;
-      const body = formatWordsMessage(words, title);
+      const body = formatWordsMessageWithSpoiler(words, title);
       const msg =
         body +
         `\n\n📌 В подборке: <b>${poolCount}</b> слов\n\n` +
@@ -503,6 +516,7 @@ export default async function handler(req, res) {
         const menuId = await getMenuMessageId(cbChatId);
         if (menuId == null || cbMsgId === menuId) {
           await sendMessage(token, cbChatId, text, replyMarkup);
+          if (menuId == null) await setMenuMessageId(cbChatId, cbMsgId);
           return;
         }
         const count = await incrementAndGetEditChainCount(cbChatId);
@@ -546,7 +560,7 @@ export default async function handler(req, res) {
         if (words.length === 0) words = getRandomWordsFromPool(pool, goal);
         const poolCount = pool.length;
         const title = `📚 🇬🇧 <b>Слова дня — ${escapeHtml(levelLabel(cbUserLevel))}</b>`;
-        const body = formatWordsMessage(words, title);
+        const body = formatWordsMessageWithSpoiler(words, title);
         const msg = body + `\n\n📌 В подборке: <b>${poolCount}</b> слов`;
         await sectionUpdate(msg, {
           inline_keyboard: [
