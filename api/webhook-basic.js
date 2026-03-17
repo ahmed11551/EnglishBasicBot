@@ -495,8 +495,8 @@ export default async function handler(req, res) {
         });
 
       const cbMsgId = cb.message?.message_id;
-      // три карточки в одном сообщении, на 4-м нажатии сгорает
-      const BURN_AFTER = 4;
+      // на 3-м нажатии (Следующее слово / Следующий вопрос / Ещё слова) сгорает и по новой
+      const BURN_AFTER = 3;
 
       /** Шапка (меню) не трогаем; контент раздела — редактируем или через BURN_AFTER нажатий удаляем и шлём новое. */
       const sectionUpdate = async (text, replyMarkup) => {
