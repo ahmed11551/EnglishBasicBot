@@ -22,11 +22,9 @@ import {
   getUserQuizProgress,
   getUserQuizProgressByLevel,
   getUserSeenIds,
-  incrementAndGetEditChainCount,
   incrementQuizStats,
   markWordSeen,
   removeSubscriber,
-  resetEditChainCount,
   resetUserStats,
   setDailyGoal,
   setMenuMessageId,
@@ -210,6 +208,22 @@ function formatWordsMessage(words, title) {
     return `${num}. <b>${escapeHtml(w.term)}</b> — ${escapeHtml(w.translation)}${ex}`;
   });
   return `${title}\n\n${lines.join('\n\n')}`;
+}
+
+/** Формат «Слова дня» со скрытым переводом (спойлер), чтобы не видеть всё сразу. */
+function formatWordsMessageWithSpoiler(words, title) {
+  const lines = words.map((w, i) => {
+    const num = i + 1;
+    let ex = '';
+    if (w.example) {
+      ex = `\n   <i>${escapeHtml(w.example)}</i>`;
+    }
+    return `${num}. <b>${escapeHtml(w.term)}</b> — <tg-spoiler>${escapeHtml(w.translation)}</tg-spoiler>${ex}`;
+  });
+  return (
+    `${title}\n\n${lines.join('\n\n')}` +
+    '\n\n💡 Нажмите на перевод, чтобы открыть. Попробуйте сначала вспомнить сами.'
+  );
 }
 
 async function sendMessage(token, chatId, text, replyMarkup = null) {
@@ -403,7 +417,8 @@ export default async function handler(req, res) {
       if (word.example) exBlock = `\n\nПример: <i>${escapeHtml(word.example)}</i>`;
       const msg =
         `📖 🇬🇧 <b>${escapeHtml(word.term)}</b>\n\n` +
-        `Перевод: ${escapeHtml(word.translation)}${exBlock}`;
+        `Перевод: <tg-spoiler>${escapeHtml(word.translation)}</tg-spoiler>${exBlock}\n\n` +
+        '💡 Нажмите на перевод, чтобы открыть. Кнопка «Следующее слово» — следующая карточка.';
       const keyboard = {
         inline_keyboard: [
           [{ text: 'Следующее слово 🇬🇧', callback_data: 'basic_learn_next' }],
@@ -460,7 +475,7 @@ export default async function handler(req, res) {
       if (words.length === 0) words = getRandomWordsFromPool(pool, goal);
       const poolCount = pool.length;
       const title = `📚 🇬🇧 <b>Слова дня — ${escapeHtml(levelLabel(userLevel))}</b>\n${escapeHtml(topicLabel(userTopic))}.`;
-      const body = formatWordsMessage(words, title);
+      const body = formatWordsMessageWithSpoiler(words, title);
       const msg =
         body +
         `\n\n📌 В подборке: <b>${poolCount}</b> слов\n\n` +
@@ -494,25 +509,26 @@ export default async function handler(req, res) {
         });
 
       const cbMsgId = cb.message?.message_id;
-      // три карточки подряд (редакт), на 4-м нажатии сгорает и новые карточки
-      const BURN_AFTER = 4;
 
-      /** Шапка (меню) не трогаем; контент раздела — редактируем или через BURN_AFTER нажатий удаляем и шлём новое. */
+      /**
+       * Обновление карточки раздела:
+       * - сообщение с меню (шапка) не трогаем, для раздела шлём отдельное сообщение;
+       * - для сообщений разделов всегда просто редактируем текст/клавиатуру,
+       *   чтобы в чате была одна «живая» карточка на раздел.
+       */
       const sectionUpdate = async (text, replyMarkup) => {
         const menuId = await getMenuMessageId(cbChatId);
+        // Если шапка ещё не сохранена или сейчас кликают именно по шапке —
+        // считаем это меню и отправляем новое сообщение с карточкой.
         if (menuId == null || cbMsgId === menuId) {
-          await sendMessage(token, cbChatId, text, replyMarkup);
-          if (menuId == null) await setMenuMessageId(cbChatId, cbMsgId);
+          const res = await sendMessage(token, cbChatId, text, replyMarkup);
+          if (menuId == null && res?.result?.message_id) {
+            await setMenuMessageId(cbChatId, res.result.message_id);
+          }
           return;
         }
-        const count = await incrementAndGetEditChainCount(cbChatId);
-        if (count >= BURN_AFTER) {
-          await deleteMessage(token, cbChatId, cbMsgId);
-          await sendMessage(token, cbChatId, text, replyMarkup);
-          await resetEditChainCount(cbChatId);
-        } else {
-          await editMessageText(token, cbChatId, cbMsgId, text, replyMarkup);
-        }
+        // Обычный случай: редактируем существующее сообщение с карточкой раздела.
+        await editMessageText(token, cbChatId, cbMsgId, text, replyMarkup);
       };
 
       if (data === 'basic_menu') {
@@ -546,7 +562,7 @@ export default async function handler(req, res) {
         if (words.length === 0) words = getRandomWordsFromPool(pool, goal);
         const poolCount = pool.length;
         const title = `📚 🇬🇧 <b>Слова дня — ${escapeHtml(levelLabel(cbUserLevel))}</b>`;
-        const body = formatWordsMessage(words, title);
+        const body = formatWordsMessageWithSpoiler(words, title);
         const msg = body + `\n\n📌 В подборке: <b>${poolCount}</b> слов`;
         await sectionUpdate(msg, {
           inline_keyboard: [
@@ -589,7 +605,8 @@ export default async function handler(req, res) {
         if (word.example) exBlock = `\n\nПример: <i>${escapeHtml(word.example)}</i>`;
         const msg =
           `📖 🇬🇧 <b>${escapeHtml(word.term)}</b>\n\n` +
-          `Перевод: ${escapeHtml(word.translation)}${exBlock}`;
+          `Перевод: <tg-spoiler>${escapeHtml(word.translation)}</tg-spoiler>${exBlock}\n\n` +
+          '💡 Нажмите на перевод, чтобы открыть. Кнопка «Следующее слово» — следующая карточка.';
         await sectionUpdate(msg, {
           inline_keyboard: [
             [{ text: 'Следующее слово 🇬🇧', callback_data: 'basic_learn_next' }],
@@ -607,7 +624,9 @@ export default async function handler(req, res) {
           let exBlock = '';
           if (word.example) exBlock = `\n\nПример: <i>${escapeHtml(word.example)}</i>`;
           const msg =
-            `📖 🇬🇧 <b>${escapeHtml(word.term)}</b>\n\nПеревод: ${escapeHtml(word.translation)}${exBlock}`;
+            `📖 🇬🇧 <b>${escapeHtml(word.term)}</b>\n\n` +
+            `Перевод: <tg-spoiler>${escapeHtml(word.translation)}</tg-spoiler>${exBlock}\n\n` +
+            '💡 Нажмите на перевод, чтобы открыть. Кнопка «Следующее слово» — следующая карточка.';
           await sectionUpdate(msg, {
             inline_keyboard: [
               [{ text: 'Следующее слово →', callback_data: 'basic_learn_next' }],
