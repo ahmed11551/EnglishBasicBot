@@ -40,6 +40,7 @@ async function ensureUser(chatId) {
       level: 'A1',
       topic: 'ALL',
       daily_goal: 5,
+      edit_chain_count: 0,
     });
     if (insertError) {
       console.error('Supabase basic_users insert error:', insertError.message);
@@ -128,6 +129,60 @@ export async function setUserTopic(chatId, topic) {
 
 export async function addUserToAllUsers(chatId) {
   return ensureUser(chatId);
+}
+
+// Счётчик нажатий в цепочке: после каждых 3 — сообщение «сгорает» (удаляется и создаётся новое).
+// В Supabase: ALTER TABLE basic_users ADD COLUMN IF NOT EXISTS edit_chain_count smallint DEFAULT 0;
+export async function getEditChainCount(chatId) {
+  const supabase = getSupabase();
+  if (!supabase || chatId == null) return 0;
+  try {
+    await ensureUser(chatId);
+    const { data, error } = await supabase
+      .from('basic_users')
+      .select('edit_chain_count')
+      .eq('chat_id', Number(chatId))
+      .maybeSingle();
+    if (error) return 0;
+    const n = Number.parseInt(String(data?.edit_chain_count ?? '0'), 10);
+    return Number.isFinite(n) && n >= 0 ? n : 0;
+  } catch {
+    return 0;
+  }
+}
+
+export async function incrementAndGetEditChainCount(chatId) {
+  const supabase = getSupabase();
+  if (!supabase || chatId == null) return 1;
+  try {
+    await ensureUser(chatId);
+    const current = await getEditChainCount(chatId);
+    const next = current + 1;
+    const { error } = await supabase
+      .from('basic_users')
+      .update({ edit_chain_count: next })
+      .eq('chat_id', Number(chatId));
+    if (error) {
+      console.error('Supabase incrementEditChainCount error:', error.message);
+      return 1;
+    }
+    return next;
+  } catch {
+    return 1;
+  }
+}
+
+export async function resetEditChainCount(chatId) {
+  const supabase = getSupabase();
+  if (!supabase || chatId == null) return;
+  try {
+    await supabase
+      .from('basic_users')
+      .update({ edit_chain_count: 0 })
+      .eq('chat_id', Number(chatId));
+  } catch (e) {
+    console.error('Supabase resetEditChainCount error:', e?.message || e);
+  }
 }
 
 // Daily goal / progress -------------------------------------------------------

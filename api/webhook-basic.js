@@ -85,6 +85,26 @@ function filterByTopic(words, topic) {
   return words.filter((w) => String(w?.moduleRu || '').trim() === t);
 }
 
+/** Пул для пользователя по уровню и теме: никогда не пустой (fallback: уровень → вся база). */
+function getPoolForUser(level, topic) {
+  let pool = filterByTopic(filterByLevel(BASIC_WORDS, level), topic);
+  if (pool.length) return pool;
+  pool = filterByLevel(BASIC_WORDS, level);
+  if (pool.length) return pool;
+  return BASIC_WORDS;
+}
+
+/** Случайные слова из пула (рандомно). */
+function getRandomWordsFromPool(pool, count) {
+  if (!pool.length) return [];
+  const copy = [...pool];
+  for (let i = copy.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [copy[i], copy[j]] = [copy[j], copy[i]];
+  }
+  return copy.slice(0, Math.min(count, copy.length));
+}
+
 /** Пул слов для «Ещё слова»: всегда вся база (A1–B1), чтобы слова были разные и по сложности. */
 function getWordsMorePool() {
   return BASIC_WORDS.length ? BASIC_WORDS : [];
@@ -225,6 +245,17 @@ async function editMessageText(token, chatId, messageId, text, replyMarkup = nul
   return data;
 }
 
+async function deleteMessage(token, chatId, messageId) {
+  const res = await fetch(`https://api.telegram.org/bot${token}/deleteMessage`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ chat_id: chatId, message_id: messageId }),
+  });
+  const data = await res.json();
+  if (!data.ok) console.error('Telegram API deleteMessage error (basic):', data);
+  return data;
+}
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     res.status(405).json({ ok: false });
@@ -267,10 +298,10 @@ export default async function handler(req, res) {
     const isSubscribe = /^\/subscribe(@\w+)?$/i.test(text);
     const isUnsubscribe = /^\/unsubscribe(@\w+)?$/i.test(text);
 
-    const showMainMenu = async (targetChatId, withIntro, currentLevel = 'A1', currentTopic = 'ALL') => {
+    const showMainMenu = async (targetChatId, withIntro, currentLevel = 'A1', currentTopic = 'ALL', editMessageId = null) => {
       const current = normalizeLevel(currentLevel);
       const topic = normalizeTopic(currentTopic);
-      const poolCount = filterByTopic(filterByLevel(BASIC_WORDS, current), topic).length;
+      const poolCount = getPoolForUser(current, topic).length;
       const [progress, goal, dailySeen] = await Promise.all([
         getUserQuizProgress(targetChatId),
         getDailyGoal(targetChatId),
@@ -306,6 +337,9 @@ export default async function handler(req, res) {
         { text: '❌ Отписаться', callback_data: 'basic_unsubscribe_daily' },
       ]);
 
+      if (editMessageId != null) {
+        await deleteMessage(token, targetChatId, editMessageId);
+      }
       await sendMessage(token, targetChatId, textMenu, keyboard);
     };
 
@@ -351,8 +385,9 @@ export default async function handler(req, res) {
         await sendMessage(token, chatId, 'Не удалось отписаться. Попробуйте позже.');
       }
     } else if (isLearn) {
-      const pool = filterByTopic(filterByLevel(BASIC_WORDS, userLevel), userTopic);
-      const word = pool.length ? pool[Math.floor(Math.random() * pool.length)] : getRandomWordBasic();
+      const pool = getPoolForUser(userLevel, userTopic);
+      const words = getRandomWordsFromPool(pool, 1);
+      const word = words[0] || getRandomWordBasic();
       if (!word?.term) {
         await sendMessage(token, chatId, 'Слова временно недоступны. Попробуйте /menu и выберите другой раздел.');
         return;
@@ -372,13 +407,14 @@ export default async function handler(req, res) {
       };
       await sendMessage(token, chatId, msg, keyboard);
     } else if (isQuiz) {
-      const pool = filterByTopic(filterByLevel(BASIC_WORDS, userLevel), userTopic);
-      const baseWord = pool.length ? pool[Math.floor(Math.random() * pool.length)] : getRandomWordBasic();
+      const pool = getPoolForUser(userLevel, userTopic);
+      const words = getRandomWordsFromPool(pool, 1);
+      const baseWord = words[0] || getRandomWordBasic();
       if (!baseWord?.term) {
         await sendMessage(token, chatId, 'Слова временно недоступны. Попробуйте /menu и выберите другой раздел.');
         return;
       }
-      const basePool = pool.length ? pool : filterByLevel(BASIC_WORDS, userLevel);
+      const basePool = pool.length ? pool : BASIC_WORDS;
       const others = basePool.filter((w) => w.id !== baseWord.id);
       const wrong = [];
       const usedTranslations = new Set([baseWord.translation]);
@@ -414,13 +450,12 @@ export default async function handler(req, res) {
       await sendMessage(token, chatId, msg, keyboard);
     } else if (isWords) {
       const goal = await getDailyGoal(chatId);
-      const words = filterByTopic(filterByLevel(getWordsOfDayBasic(goal, null), userLevel), userTopic);
-      const poolCount = filterByTopic(filterByLevel(BASIC_WORDS, userLevel), userTopic).length;
+      const pool = getPoolForUser(userLevel, userTopic);
+      let words = filterByTopic(filterByLevel(getWordsOfDayBasic(goal, null), userLevel), userTopic);
+      if (words.length === 0) words = getRandomWordsFromPool(pool, goal);
+      const poolCount = pool.length;
       const title = `📚 🇬🇧 <b>Слова дня — ${escapeHtml(levelLabel(userLevel))}</b>\n${escapeHtml(topicLabel(userTopic))}.`;
-      const body =
-        words.length > 0
-          ? formatWordsMessage(words, title)
-          : `${title}\n\nВ этой подборке пока нет слов. Нажмите «Ещё слова» для случайных слов из всей базы.`;
+      const body = formatWordsMessage(words, title);
       const msg =
         body +
         `\n\n📌 В подборке: <b>${poolCount}</b> слов\n\n` +
@@ -453,11 +488,14 @@ export default async function handler(req, res) {
           body: JSON.stringify({ callback_query_id: cb.id }),
         });
 
+      const cbMsgId = cb.message?.message_id;
+
       if (data === 'basic_menu') {
         await answerCb();
-        await showMainMenu(cbChatId, false, cbUserLevel, cbUserTopic);
+        await showMainMenu(cbChatId, false, cbUserLevel, cbUserTopic, cbMsgId);
       } else if (data === 'basic_goal') {
         await answerCb();
+        await deleteMessage(token, cbChatId, cbMsgId);
         const goal = await getDailyGoal(cbChatId);
         const dailySeen = await getDailySeenCount(cbChatId);
         await sendMessage(
@@ -478,16 +516,17 @@ export default async function handler(req, res) {
         if (Number.isFinite(n) && n > 0 && n <= 50) {
           await setDailyGoal(cbChatId, n);
         }
-        await showMainMenu(cbChatId, false, cbUserLevel, cbUserTopic);
+        await showMainMenu(cbChatId, false, cbUserLevel, cbUserTopic, cbMsgId);
       } else if (data === 'basic_words_day') {
+        await answerCb();
+        await deleteMessage(token, cbChatId, cbMsgId);
         const goal = await getDailyGoal(cbChatId);
-        const words = filterByTopic(filterByLevel(getWordsOfDayBasic(goal, null), cbUserLevel), cbUserTopic);
-        const poolCount = filterByTopic(filterByLevel(BASIC_WORDS, cbUserLevel), cbUserTopic).length;
+        const pool = getPoolForUser(cbUserLevel, cbUserTopic);
+        let words = filterByTopic(filterByLevel(getWordsOfDayBasic(goal, null), cbUserLevel), cbUserTopic);
+        if (words.length === 0) words = getRandomWordsFromPool(pool, goal);
+        const poolCount = pool.length;
         const title = `📚 🇬🇧 <b>Слова дня — ${escapeHtml(levelLabel(cbUserLevel))}</b>`;
-        const body =
-          words.length > 0
-            ? formatWordsMessage(words, title)
-            : `${title}\n\nВ этой подборке пока нет слов. Нажмите «Ещё слова» для случайных слов из всей базы.`;
+        const body = formatWordsMessage(words, title);
         const msg = body + `\n\n📌 В подборке: <b>${poolCount}</b> слов`;
         await sendMessage(token, cbChatId, msg, {
           inline_keyboard: [
@@ -495,8 +534,9 @@ export default async function handler(req, res) {
             [{ text: '🏠 Меню', callback_data: 'basic_menu' }],
           ],
         });
-        await answerCb();
       } else if (data === 'basic_words_more') {
+        await answerCb();
+        await deleteMessage(token, cbChatId, cbMsgId);
         const pool = getWordsMorePool();
         const poolCount = pool.length;
         const word = pool.length
@@ -514,13 +554,16 @@ export default async function handler(req, res) {
             [{ text: '🏠 Меню', callback_data: 'basic_menu' }],
           ],
         });
-        await answerCb();
       } else if (data === 'basic_learn_next') {
         await answerCb();
-        const pool = filterByTopic(filterByLevel(BASIC_WORDS, cbUserLevel), cbUserTopic);
-        const word = pool.length ? pool[Math.floor(Math.random() * pool.length)] : getRandomWordBasic();
+        await deleteMessage(token, cbChatId, cbMsgId);
+        const pool = getPoolForUser(cbUserLevel, cbUserTopic);
+        const words = getRandomWordsFromPool(pool, 1);
+        const word = words[0] || getRandomWordBasic();
         if (!word?.term) {
-          await sendMessage(token, cbChatId, 'Слова временно недоступны. Попробуйте позже.');
+          await sendMessage(token, cbChatId, 'Слова временно недоступны. Попробуйте позже.', {
+            inline_keyboard: [[{ text: '🏠 Меню', callback_data: 'basic_menu' }]],
+          });
           return;
         }
         await markWordSeen(cbChatId, word.id);
@@ -539,8 +582,10 @@ export default async function handler(req, res) {
       } else if (data.startsWith('basic_learn_pick_')) {
         await answerCb();
       } else if (data.startsWith('basic_learn_show_')) {
+        await answerCb();
         const wordId = data.slice('basic_learn_show_'.length);
         const word = getWordByIdBasic(wordId);
+        await deleteMessage(token, cbChatId, cbMsgId);
         if (word) {
           await markWordSeen(cbChatId, wordId);
           let ex = '';
@@ -551,23 +596,24 @@ export default async function handler(req, res) {
             `📖 🇬🇧 <b>${escapeHtml(word.term)}</b>\n\n→ ${escapeHtml(word.translation)}${ex}${exRu}\n\n<i>${escapeHtml(
               word.moduleRu || '',
             )}</i>`;
-          await editMessageText(token, cbChatId, cb.message.message_id, msg, {
+          await sendMessage(token, cbChatId, msg, {
             inline_keyboard: [
               [{ text: 'Следующее слово →', callback_data: 'basic_learn_next' }],
               [{ text: '🏠 Меню', callback_data: 'basic_menu' }],
             ],
           });
         } else {
-          await editMessageText(token, cbChatId, cb.message.message_id, 'Слово не найдено.', {
+          await sendMessage(token, cbChatId, 'Слово не найдено.', {
             inline_keyboard: [[{ text: '🏠 Меню', callback_data: 'basic_menu' }]],
           });
         }
-        await answerCb();
       } else if (data === 'basic_quiz_next') {
         await answerCb();
-        const pool = filterByTopic(filterByLevel(BASIC_WORDS, cbUserLevel), cbUserTopic);
-        const baseWord = pool.length ? pool[Math.floor(Math.random() * pool.length)] : getRandomWordBasic();
-        const basePool = pool.length ? pool : filterByLevel(BASIC_WORDS, cbUserLevel);
+        await deleteMessage(token, cbChatId, cbMsgId);
+        const pool = getPoolForUser(cbUserLevel, cbUserTopic);
+        const words = getRandomWordsFromPool(pool, 1);
+        const baseWord = words[0] || getRandomWordBasic();
+        const basePool = pool.length ? pool : BASIC_WORDS;
         const others = basePool.filter((w) => w.id !== baseWord.id);
         const wrong = [];
         const usedTranslations = new Set([baseWord.translation]);
@@ -617,31 +663,31 @@ export default async function handler(req, res) {
         await incrementQuizStats(cbChatId, lvl, isCorrect);
         const hint = '\n\n💡 Можно повторить это слово ещё раз в режиме «📖 Учить слова».';
         const resultMsg = base + hint;
-        await editMessageText(token, cbChatId, cb.message.message_id, resultMsg, {
+        await answerCb();
+        await deleteMessage(token, cbChatId, cbMsgId);
+        await sendMessage(token, cbChatId, resultMsg, {
           inline_keyboard: [
             [{ text: 'Следующий вопрос →', callback_data: 'basic_quiz_next' }],
             [{ text: '🏠 Меню', callback_data: 'basic_menu' }],
           ],
         });
-        await answerCb();
       } else if (data === 'basic_subscribe_daily') {
         await answerCb();
-        if (await addSubscriber(cbChatId)) {
-          await sendMessage(
-            token,
-            cbChatId,
-            '✅ Подписка оформлена! Каждый день вы будете получать простые слова.\n\nОтписаться: /unsubscribe',
-          );
-        } else {
-          await sendMessage(token, cbChatId, '⚠️ Подписка временно недоступна. Попробуйте /subscribe позже.');
-        }
+        await deleteMessage(token, cbChatId, cbMsgId);
+        const subMsg = (await addSubscriber(cbChatId))
+          ? '✅ Подписка оформлена! Каждый день вы будете получать простые слова.\n\nОтписаться: /unsubscribe'
+          : '⚠️ Подписка временно недоступна. Попробуйте /subscribe позже.';
+        await sendMessage(token, cbChatId, subMsg, {
+          inline_keyboard: [[{ text: '🏠 Меню', callback_data: 'basic_menu' }]],
+        });
       } else if (data === 'basic_unsubscribe_daily') {
         await answerCb();
-        if (await removeSubscriber(cbChatId)) {
-          await sendMessage(token, cbChatId, 'Вы отписаны. Подписаться снова: /subscribe');
-        } else {
-          await sendMessage(token, cbChatId, 'Подписка не была активна.');
-        }
+        await deleteMessage(token, cbChatId, cbMsgId);
+        const ok = await removeSubscriber(cbChatId);
+        const unsubMsg = ok ? 'Вы отписаны. Подписаться снова: /subscribe' : 'Подписка не была активна.';
+        await sendMessage(token, cbChatId, unsubMsg, {
+          inline_keyboard: [[{ text: '🏠 Меню', callback_data: 'basic_menu' }]],
+        });
       } else {
         await answerCb();
       }
