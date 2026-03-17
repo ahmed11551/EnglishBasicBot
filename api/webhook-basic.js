@@ -212,19 +212,6 @@ function formatWordsMessage(words, title) {
   return `${title}\n\n${lines.join('\n\n')}`;
 }
 
-/** Как formatWordsMessage, но перевод скрыт в спойлере (нажми, чтобы открыть). */
-function formatWordsMessageWithSpoiler(words, title) {
-  const lines = words.map((w, i) => {
-    const num = i + 1;
-    let ex = '';
-    if (w.example) {
-      ex = `\n   <i>${escapeHtml(w.example)}</i>`;
-    }
-    return `${num}. <b>${escapeHtml(w.term)}</b> — <tg-spoiler>${escapeHtml(w.translation)}</tg-spoiler>${ex}`;
-  });
-  return `${title}\n\n${lines.join('\n\n')}\n\n💡 Нажмите на перевод, чтобы открыть.`;
-}
-
 async function sendMessage(token, chatId, text, replyMarkup = null) {
   const body = {
     chat_id: chatId,
@@ -416,8 +403,7 @@ export default async function handler(req, res) {
       if (word.example) exBlock = `\n\nПример: <i>${escapeHtml(word.example)}</i>`;
       const msg =
         `📖 🇬🇧 <b>${escapeHtml(word.term)}</b>\n\n` +
-        `Перевод: <tg-spoiler>${escapeHtml(word.translation)}</tg-spoiler>${exBlock}\n\n` +
-        '💡 Нажмите на перевод, чтобы открыть. Кнопка «Следующее слово» — следующая карточка.';
+        `Перевод: ${escapeHtml(word.translation)}${exBlock}`;
       const keyboard = {
         inline_keyboard: [
           [{ text: 'Следующее слово 🇬🇧', callback_data: 'basic_learn_next' }],
@@ -474,7 +460,7 @@ export default async function handler(req, res) {
       if (words.length === 0) words = getRandomWordsFromPool(pool, goal);
       const poolCount = pool.length;
       const title = `📚 🇬🇧 <b>Слова дня — ${escapeHtml(levelLabel(userLevel))}</b>\n${escapeHtml(topicLabel(userTopic))}.`;
-      const body = formatWordsMessageWithSpoiler(words, title);
+      const body = formatWordsMessage(words, title);
       const msg =
         body +
         `\n\n📌 В подборке: <b>${poolCount}</b> слов\n\n` +
@@ -508,8 +494,8 @@ export default async function handler(req, res) {
         });
 
       const cbMsgId = cb.message?.message_id;
-      // на 3-м нажатии (Следующее слово / Следующий вопрос / Ещё слова) сгорает и по новой
-      const BURN_AFTER = 3;
+      // три карточки подряд (редакт), на 4-м нажатии сгорает и новые карточки
+      const BURN_AFTER = 4;
 
       /** Шапка (меню) не трогаем; контент раздела — редактируем или через BURN_AFTER нажатий удаляем и шлём новое. */
       const sectionUpdate = async (text, replyMarkup) => {
@@ -560,7 +546,7 @@ export default async function handler(req, res) {
         if (words.length === 0) words = getRandomWordsFromPool(pool, goal);
         const poolCount = pool.length;
         const title = `📚 🇬🇧 <b>Слова дня — ${escapeHtml(levelLabel(cbUserLevel))}</b>`;
-        const body = formatWordsMessageWithSpoiler(words, title);
+        const body = formatWordsMessage(words, title);
         const msg = body + `\n\n📌 В подборке: <b>${poolCount}</b> слов`;
         await sectionUpdate(msg, {
           inline_keyboard: [
@@ -603,8 +589,7 @@ export default async function handler(req, res) {
         if (word.example) exBlock = `\n\nПример: <i>${escapeHtml(word.example)}</i>`;
         const msg =
           `📖 🇬🇧 <b>${escapeHtml(word.term)}</b>\n\n` +
-          `Перевод: <tg-spoiler>${escapeHtml(word.translation)}</tg-spoiler>${exBlock}\n\n` +
-          '💡 Нажмите на перевод, чтобы открыть. Кнопка «Следующее слово» — следующая карточка.';
+          `Перевод: ${escapeHtml(word.translation)}${exBlock}`;
         await sectionUpdate(msg, {
           inline_keyboard: [
             [{ text: 'Следующее слово 🇬🇧', callback_data: 'basic_learn_next' }],
@@ -619,14 +604,10 @@ export default async function handler(req, res) {
         const word = getWordByIdBasic(wordId);
         if (word) {
           await markWordSeen(cbChatId, wordId);
-          let ex = '';
-          if (word.example) ex = `\n\n<i>${escapeHtml(word.example)}</i>`;
-          let exRu = '';
-          if (word.exampleRu) exRu = `\n<i>${escapeHtml(word.exampleRu)}</i>`;
+          let exBlock = '';
+          if (word.example) exBlock = `\n\nПример: <i>${escapeHtml(word.example)}</i>`;
           const msg =
-            `📖 🇬🇧 <b>${escapeHtml(word.term)}</b>\n\n→ ${escapeHtml(word.translation)}${ex}${exRu}\n\n<i>${escapeHtml(
-              word.moduleRu || '',
-            )}</i>`;
+            `📖 🇬🇧 <b>${escapeHtml(word.term)}</b>\n\nПеревод: ${escapeHtml(word.translation)}${exBlock}`;
           await sectionUpdate(msg, {
             inline_keyboard: [
               [{ text: 'Следующее слово →', callback_data: 'basic_learn_next' }],
