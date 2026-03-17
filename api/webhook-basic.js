@@ -494,10 +494,9 @@ export default async function handler(req, res) {
 
       if (data === 'basic_menu') {
         await answerCb();
-        await showMainMenu(cbChatId, false, cbUserLevel, cbUserTopic, cbMsgId);
+        await deleteMessage(token, cbChatId, cbMsgId);
       } else if (data === 'basic_goal') {
         await answerCb();
-        await deleteMessage(token, cbChatId, cbMsgId);
         const goal = await getDailyGoal(cbChatId);
         const dailySeen = await getDailySeenCount(cbChatId);
         await sendMessage(
@@ -518,10 +517,9 @@ export default async function handler(req, res) {
         if (Number.isFinite(n) && n > 0 && n <= 50) {
           await setDailyGoal(cbChatId, n);
         }
-        await showMainMenu(cbChatId, false, cbUserLevel, cbUserTopic, cbMsgId);
+        await deleteMessage(token, cbChatId, cbMsgId);
       } else if (data === 'basic_words_day') {
         await answerCb();
-        await deleteMessage(token, cbChatId, cbMsgId);
         const goal = await getDailyGoal(cbChatId);
         const pool = getPoolForUser(cbUserLevel, cbUserTopic);
         let words = filterByTopic(filterByLevel(getWordsOfDayBasic(goal, null), cbUserLevel), cbUserTopic);
@@ -538,7 +536,6 @@ export default async function handler(req, res) {
         });
       } else if (data === 'basic_words_more') {
         await answerCb();
-        await deleteMessage(token, cbChatId, cbMsgId);
         const pool = getWordsMorePool();
         const poolCount = pool.length;
         const word = pool.length
@@ -558,7 +555,6 @@ export default async function handler(req, res) {
         });
       } else if (data === 'basic_learn_next') {
         await answerCb();
-        await deleteMessage(token, cbChatId, cbMsgId);
         const pool = getPoolForUser(cbUserLevel, cbUserTopic);
         const words = getRandomWordsFromPool(pool, 1);
         const word = words[0] || getRandomWordBasic();
@@ -587,7 +583,6 @@ export default async function handler(req, res) {
         await answerCb();
         const wordId = data.slice('basic_learn_show_'.length);
         const word = getWordByIdBasic(wordId);
-        await deleteMessage(token, cbChatId, cbMsgId);
         if (word) {
           await markWordSeen(cbChatId, wordId);
           let ex = '';
@@ -611,7 +606,6 @@ export default async function handler(req, res) {
         }
       } else if (data === 'basic_quiz_next') {
         await answerCb();
-        await deleteMessage(token, cbChatId, cbMsgId);
         const pool = getPoolForUser(cbUserLevel, cbUserTopic);
         const words = getRandomWordsFromPool(pool, 1);
         const baseWord = words[0] || getRandomWordBasic();
@@ -666,7 +660,6 @@ export default async function handler(req, res) {
         const hint = '\n\n💡 Можно повторить это слово ещё раз в режиме «📖 Учить слова».';
         const resultMsg = base + hint;
         await answerCb();
-        await deleteMessage(token, cbChatId, cbMsgId);
         await sendMessage(token, cbChatId, resultMsg, {
           inline_keyboard: [
             [{ text: 'Следующий вопрос →', callback_data: 'basic_quiz_next' }],
@@ -675,7 +668,6 @@ export default async function handler(req, res) {
         });
       } else if (data === 'basic_subscribe_daily') {
         await answerCb();
-        await deleteMessage(token, cbChatId, cbMsgId);
         const subMsg = (await addSubscriber(cbChatId))
           ? '✅ Подписка оформлена! Каждый день вы будете получать простые слова.\n\nОтписаться: /unsubscribe'
           : '⚠️ Подписка временно недоступна. Попробуйте /subscribe позже.';
@@ -684,7 +676,6 @@ export default async function handler(req, res) {
         });
       } else if (data === 'basic_unsubscribe_daily') {
         await answerCb();
-        await deleteMessage(token, cbChatId, cbMsgId);
         const ok = await removeSubscriber(cbChatId);
         const unsubMsg = ok ? 'Вы отписаны. Подписаться снова: /subscribe' : 'Подписка не была активна.';
         await sendMessage(token, cbChatId, unsubMsg, {
